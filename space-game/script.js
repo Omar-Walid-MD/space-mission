@@ -214,7 +214,7 @@ function move(direction)
 }
 function shoot()
 {
-    if(canShoot)
+    if(canShoot && health > 0)
     {
 
         let bulletHTML = `<div class="bullet flex-center" moving="false" vector=""><div class="bullet-background"></div><div class="bullet-collider collider"></div></div>`;
