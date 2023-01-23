@@ -39,7 +39,7 @@ let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
 
-let frameRate = 20;
+let frameRate = 12;
 let speed = 5;
 let playerRate = speed*1000/frameRate/10;
 let rate = 1000/frameRate/10;
