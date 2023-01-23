@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "gh-pages": "^5.0.0",
     "module": "^1.2.5"
   }
 }
