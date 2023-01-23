@@ -24,10 +24,10 @@ let playerH = getComputedStyle(player).height.slice(0,-2);
 let controls = {
     //87: {pressed: false, func: function(){move("y",-1)}}, //w
     // 37: {pressed: false, func: function(){move("x",-1); player.setAttribute("steer","left");}}, //a
-    65: {pressed: false, func: function(){move("x",-1); player.setAttribute("steer","left");}}, //a
+    65: {pressed: false, func: function(){move(-1); player.setAttribute("steer","left");}}, //a
     //83: {pressed: false, func: function(){move("y",1);}}, //s
     // 39: {pressed: false, func: function(){move("x",1); player.setAttribute("steer","right");}}, //d
-    68: {pressed: false, func: function(){move("x",1); player.setAttribute("steer","right");}} //d
+    68: {pressed: false, func: function(){move(1); player.setAttribute("steer","right");}} //d
 
 };
 
@@ -35,10 +35,14 @@ let active = false;
 let canShoot = true;
 let canTakeDamage = true;
 
-let rate = 5;
 let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
+
+let frameRate = 24;
+let speed = 5;
+let playerRate = speed*1000/frameRate/10;
+let rate = 1000/frameRate/10;
 
 let initialSpawnRate = 30; //per minute
 let maxSpawnRate = 200;
@@ -124,7 +128,7 @@ class Enemy
             let windowMid = gameWindow.getBoundingClientRect().left+gameWindow.getBoundingClientRect().width;
             let enemyMid = this.element.getBoundingClientRect().left+this.element.getBoundingClientRect().width;
             let midPointRatio = 1-Math.abs(windowMid-enemyMid)/windowMid;
-            // playSound(enemyShootSound,(0.5 * midPointRatio));
+            playSound(enemyShootSound,(0.5 * midPointRatio));
             // console.log("shoot");
         }
     }
@@ -198,29 +202,21 @@ leftButton.onpointerdown = () => {controls[65].pressed=true; player.setAttribute
 shootButton.onpointerdown = () => {shoot()};
 
 //functions
-function move(axis,direction)
+function move(direction)
 {
-    if(axis==="x")
-    {
-        if(direction===1 && player.getBoundingClientRect().right <= gameWindow.getBoundingClientRect().right)
-            player.style.left = ++playerX * rate + "px";
-        
-        else if(direction===-1 && player.getBoundingClientRect().left > gameWindow.getBoundingClientRect().left)
-            player.style.left = --playerX * rate + "px";
-    }
-    else if(axis==="y")
-    {
-        if(direction===1 && player.getBoundingClientRect().bottom <= gameWindow.getBoundingClientRect().bottom)
-            player.style.top = ++playerY * rate + "px";
-        else if(direction===-1 && player.getBoundingClientRect().top > gameWindow.getBoundingClientRect().top)
-            player.style.top = --playerY * rate + "px";
-    }
+ 
+    if(direction===1 && player.getBoundingClientRect().right <= gameWindow.getBoundingClientRect().right)
+        player.style.left = ++playerX * playerRate + "px";
+    
+    else if(direction===-1 && player.getBoundingClientRect().left > gameWindow.getBoundingClientRect().left)
+        player.style.left = --playerX * playerRate + "px";
     
 }
 function shoot()
 {
     if(canShoot)
     {
+
         let bulletHTML = `<div class="bullet flex-center" moving="false" vector=""><div class="bullet-background"></div><div class="bullet-collider collider"></div></div>`;
         let bullet = new Bullet(addElement(bulletHTML),"bullet",-10,"enemy");
 
@@ -335,14 +331,13 @@ function moveEnemies()
 {
     let enemyElements = document.querySelectorAll(".enemy");
     enemyElements.forEach(enemy => {
-        enemy.style.left = parseInt(getComputedStyle(enemy).left.slice(0,-2)) + (enemy.getAttribute("dir")==="true" ? -1 : 1) * 2 + "px";
+        enemy.style.left = parseInt(getComputedStyle(enemy).left.slice(0,-2)) + rate * (enemy.getAttribute("dir")==="true" ? -1 : 1) * 2 + "px";
         if((enemy.getAttribute("dir")==="true" && enemy.getBoundingClientRect().right < gameWindow.getBoundingClientRect().left)
           || (enemy.getAttribute("dir")==="false" && enemy.getBoundingClientRect().left > gameWindow.getBoundingClientRect().right))
         {
             colliders = colliders.filter((collider)=>collider.element!==enemy);
             enemies = enemies.filter((enemyInList)=>enemyInList.element!==enemy);
             enemy.remove();
-            playSound(uiSound);
         }
     });
 }
@@ -439,7 +434,7 @@ function moveBullets()
 {
     let bullets = document.querySelectorAll(`.bullet[moving="true"]`);
     bullets.forEach(bullet => {
-        bullet.style.top = parseInt(getComputedStyle(bullet).top.slice(0,-2)) + (parseInt(bullet.getAttribute("vector"))) + "px";
+        bullet.style.top = parseInt(getComputedStyle(bullet).top.slice(0,-2)) + rate * (parseInt(bullet.getAttribute("vector"))) + "px";
         if(getCollisions(bullet.querySelector(".bullet-collider"),bullet.getAttribute("collision")).length>0)
         {
             let enemyCollider = getCollisions(bullet.querySelector(".bullet-collider"),"enemy")[0];
@@ -613,13 +608,13 @@ function makeId(length)
 
 function start()
 {
-    playerX = gameWindow.getBoundingClientRect().width/2/rate - player.getBoundingClientRect().width/2/rate;
-    playerY = gameWindow.getBoundingClientRect().height*(2/3)/rate;
+    playerX = gameWindow.getBoundingClientRect().width/playerRate/2.4 - player.getBoundingClientRect().width/playerRate/2.4;
+    playerY = gameWindow.getBoundingClientRect().height*(2/3)/playerRate;
 
     initHealth();
 
-    player.style.left = playerX * rate + "px";
-    player.style.top = playerY * rate + "px";
+    player.style.left = playerX * playerRate + "px";
+    player.style.top = playerY * playerRate + "px";
 
     gameOverlay.addEventListener("transitionend", function(){if(gameOverlay.getAttribute("window")==="none")document.activeElement.blur();}); 
 
@@ -638,7 +633,6 @@ function start()
             spawnEnemy();
             if(timerObject && 60.0/spawnRate*1000!==timerObject.maxTime)
             {
-                console.log("changed spawn rate");
                 clearInterval(timerObject.timerId);
                 timerObject.maxTime = 60.0/spawnRate*1000;
                 timerObject.timerId = setInterval(() => {
@@ -712,4 +706,4 @@ setInterval(function(){
         moveBullets();
     }
 
-},10);
+},1000/frameRate);
