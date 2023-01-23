@@ -39,7 +39,7 @@ let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
 
-let frameRate = 24;
+let frameRate = 20;
 let speed = 5;
 let playerRate = speed*1000/frameRate/10;
 let rate = 1000/frameRate/10;
@@ -615,6 +615,8 @@ function start()
 
     player.style.left = playerX * playerRate + "px";
     player.style.top = playerY * playerRate + "px";
+
+    gameBackground.style.animationTimingFunction = "steps(" + (1000 * frameRate / 100) + ")";
 
     gameOverlay.addEventListener("transitionend", function(){if(gameOverlay.getAttribute("window")==="none")document.activeElement.blur();}); 
 

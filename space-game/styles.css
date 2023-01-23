@@ -95,7 +95,7 @@ body[controls="touch"] .keyboard-guide
 
     animation: background-roll infinite linear;
     animation-duration: 10s;
-    animation-timing-function: steps(10);
+    animation-timing-function: steps(100);
 
 }
 .game-overlay
