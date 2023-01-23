@@ -1,0 +1,571 @@
+:root
+{
+    --background: rgb(20, 50, 20);
+}
+*
+{
+    /* font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    font-family: 'Noto Kufi Arabic', sans-serif;
+    direction: rtl;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+body[active="true"] :is(.game-window-background,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
+{
+    animation-play-state: running;
+}
+/* body[active="false"] .game-window-background, body[active="false"] .player, body[active="false"] .player-background, body[active="false"] .enemy-explode,.player-explode
+{
+    animation-play-state: paused;
+} */
+body[active="false"] :is(.game-window-background,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
+{
+    animation-play-state: paused;
+}
+body[started="false"] :is(.player,.score-label,.health-bar,.game-paused-window,.game-over-window,.pause-button)
+{
+    display: none;
+}
+body[started="false"] .game-guide
+{
+    animation: none;
+}
+body[controls="keyboard"] .game-window-buttons
+{
+    display: none;
+}
+body[controls="touch"] .keyboard-guide
+{
+    display: none;
+}
+@keyframes guide
+{
+    0% {opacity: 0;}
+    10% {opacity: 1;}
+    90% {opacity: 1;}
+    100% {opacity: 0;}   
+}
+
+.flex-center
+{
+    display: flex;
+    justify-content: center; align-items: center;
+}
+.page-container
+{
+    width: 100%; height: 100%;
+    /* background-color: lightblue; */
+
+    position: absolute;
+    top: 0; left: 0;
+   
+}
+.audio-container
+{
+    display: none;
+}
+@keyframes background-roll {
+    0% {background-position: 0% 100%;}
+    100% {background-position: 0% -15%;}
+}
+.game-window
+{
+    width: 900px; height: 600px;
+    
+    /* border: 5px inset black; */
+    outline: none;
+
+    box-shadow: 0 0 50px 10px black;
+
+    position: relative;
+
+    overflow: hidden;
+}
+.game-window-background
+{
+    width: 101%; height: 101%;
+
+    background-color: white;
+    background-image: url("assets/img/bg.png");
+    background-size: 200%;
+    background-position: 100% 0%;
+    filter: blur(1px);
+
+    position: absolute;
+
+    animation: background-roll infinite linear;
+    animation-duration: 10s;
+
+}
+.game-overlay
+{
+    width: 100%; height: 100%;
+
+    background-color: rgba(25, 50, 25, 0.5);
+    backdrop-filter: blur(3px);
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+
+    z-index: 1;
+}
+.game-over-window, .game-paused-window, .game-start-window
+{
+    height: 300px; aspect-ratio: 1;
+
+    background-color: rgba(50, 205, 50, 0.1);
+    color: limegreen;
+    text-align: center;
+
+    border-radius: 15px;
+    border: 2px solid limegreen;
+    box-shadow: 0 0 10px black;
+
+    padding: 20px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; align-items: center;
+
+    transform: scaleX(0);
+    transition: transform 0.2s ease-in-out;
+
+    position: absolute;
+
+    z-index: 2;
+}
+.game-window-buttons
+{
+    width: 100%; height: 80%;
+
+    position: absolute;
+    bottom: 0; left: 0;
+
+    opacity: 1;
+
+    display: flex;
+    justify-content: space-between; align-items: center;
+
+    z-index: 1;
+
+}
+.game-window-button
+{
+    width: 100%; height: 100%;
+
+    color: limegreen;
+    font-size: 25pt;
+
+    background: linear-gradient(transparent, rgba(50, 205, 50, 0.5) 100%);
+
+    border: none; outline: none;
+
+}
+.game-window-button#shootbutton
+{
+    width: 90%;
+
+    background: linear-gradient(transparent 20%, rgba(255, 217, 0, 0.5) 80%);
+}
+.game-guide
+{
+    animation: guide 5s forwards ease-in-out;
+    opacity: 0;
+}
+.keyboard-guide
+{
+    width: 100%;
+
+    background-color: rgba(50, 205, 50, 0.2);
+    color: limegreen;
+
+    text-align: center;
+    font-size: 25pt;
+
+    position: absolute;
+    top: 25%; left: 0;
+
+    pointer-events: none;
+}
+.game-start-window
+{
+    width: 400px; height: 400px;
+}
+.game-start-preview-img
+{
+    width: 200px; height: 200px;
+
+    background-image: url("assets/img/sprites.png");
+    background-size: 500% 100%;
+    background-position: 0% 100%;
+    background-repeat: no-repeat;
+
+    filter: drop-shadow(0 0 10px gold);
+}
+.game-overlay:not([window="none"])
+{
+    opacity: 1;
+    pointer-events: all;
+}
+.game-overlay[window="gameOver"] .game-over-window
+{
+    transform: scaleX(1);
+}
+.game-overlay[window="gamePaused"] .game-paused-window
+{
+    transform: scaleX(1);
+}
+.game-overlay[window="gameStart"] .game-start-window
+{
+    transform: scaleX(1);
+}
+
+.window-label
+{
+    font-size: 30pt;
+    margin: 0;
+}
+.game-over-window .window-label
+{
+    color: red;
+}
+.game-over-score-label
+{
+    font-size: 18pt;
+
+    display: flex;
+    justify-content: center; align-items: center;
+    /* color: red; */
+}
+.game-over-score-label[new-highscore="true"]
+{
+    animation: new-highscore 0.5s infinite ease-in-out;
+}
+.game-over-score-label[new-highscore="true"] +.game-over-highscore-label
+{
+    display: none;
+}
+.game-over-highscore-label
+{
+    opacity: 0.6;
+}
+@keyframes new-highscore
+{
+    0% {color: rgb(130, 255, 130);}
+    50% {color: rgb(10, 170, 10)}
+    100% {color: rgb(130, 255, 130);}
+}
+.window-button
+{
+    background-color: transparent;
+    color: limegreen;
+    font-size: 15pt;
+    
+    border: 2px solid limegreen;
+    border-radius: 10px;
+    
+    padding: 5px;
+    
+    outline: none;
+    cursor: pointer;
+}
+.window-button:hover
+{
+    scale: 1.1;
+}
+
+
+@keyframes lose-point
+{
+    0% {background-color: transparent}
+    50% {background-color: limegreen}
+    100% {background-color: transparent}
+}
+.score-label
+{
+    width: 100px;
+
+    font-size: 30pt;
+    background-color: rgba(50, 205, 50, 0.2);
+    color: limegreen;
+
+    border: solid limegreen;
+    border-width: 3px 3px 3px 0;
+    border-radius: 0 10px 10px 0;
+
+    padding-inline-start: 20px;
+
+    position: absolute;
+    top: 0; left: 0;
+
+    z-index: 1;
+}
+.health-bar
+{
+    width: 50px; height: 200px;
+    margin: 20px;
+
+    background-color: rgba(50, 205, 50, 0.2);
+
+    border-radius: 10px;
+    border: 3px solid limegreen;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; align-items: center;
+    gap: 10px;
+
+    position: absolute;
+    bottom: 0; right: 0;
+
+    z-index: 1;
+}
+.health-bar-point
+{
+    width: 100%; height: 100%;
+
+    background-color: limegreen;
+
+    border-radius: 5px;
+    border: 3px solid limegreen;
+
+    transition: background-color 0.2s ease-in-out;
+}
+.health-bar-point[full="false"]
+{
+    animation: lose-point 0.2s ease-in-out 4 forwards;
+}
+.pause-button
+{
+    width: 50px; height: 50px;
+    font-size: 40pt;
+    margin: 20px;
+
+    background-color: rgba(50, 205, 50, 0.2);
+
+    border: 3px solid limegreen;
+
+    display: flex;
+    justify-content: center; align-items: center;
+
+    position: absolute;
+    top: 0; right: 0;
+
+    z-index: 1;
+}
+
+@keyframes damaged
+{
+    0% {opacity: 1;}
+    50% {opacity: 0.5;}
+    100% {opacity: 1;}
+}
+@keyframes shake
+{
+    0% {translate: 0px;}
+    25% {translate: 5px;}
+    75% {translate: -5px;}
+    100% {translate: 0px;}
+}
+.player
+{
+    width: 150px; aspect-ratio: 1;
+
+    position: absolute;
+    top: 0; left: 0;
+
+    transition: opacity 1s ease-in-out;
+}
+.player-background
+{
+    width: 100%; height: 100%;
+
+    background-image: url("assets/img/sprites.png");
+    -webkit-mask-image: url("assets/img/sprites.png");
+    background-size: 500% 100%;
+    -webkit-mask-size: 500% 100%;
+
+    background-position: 0% 100%;
+    -webkit-mask-position: 0% 100%;
+
+    background-repeat: no-repeat;
+    mask-repeat: no-repeat;
+
+    background-blend-mode: multiply;
+
+    transition: rotate 0.1s ease-in-out, background-color 0.5s ease-in-out;
+
+    /* border: 2px solid red; */
+
+}
+.player-collider
+{
+    width: 100px; height: 70px;
+
+    /* border: 2px solid lime; */
+
+    position: absolute;
+}
+@keyframes steer-right
+{
+    0% {background-position: 0% 100%; -webkit-mask-position: 0% 100%;}
+    100% {background-position: 100% 100%; -webkit-mask-position: 100% 100%;}    
+}
+.player[steer="right"] .player-background, .player[steer="right"] .player-shadow
+{
+    rotate: y 30deg;
+    animation: steer-right 0.2s forwards steps(4,start);
+}
+.player[steer="left"] .player-background, .player[steer="left"] .player-shadow
+{
+    scale: -1 1;
+    rotate: y -30deg;
+    animation: steer-right 0.2s forwards steps(4,start);
+}
+.player[damaged="true"]
+{
+    animation: damaged 1s infinite, shake 0.1s 5 forwards;
+}
+.player[damaged="true"] .player-background
+{
+    background-color: red;
+}
+.player-shadow
+{
+    width: 100%; height: 100%;
+
+    background-image: url("assets/img/sprites.png");
+    background-size: 500% 100%;
+
+    background-position: 0% 100%;
+
+    background-repeat: no-repeat;
+
+    filter: drop-shadow(0 0 10px gold);
+
+    position: absolute;
+
+    transition: rotate 0.1s ease-in-out;
+
+}
+.player-explode
+{
+    width: 100%; height: 100%;
+
+    background-size: 1200% 100%;
+    background-position: 0% 100%;
+
+    animation: 0.5s forwards steps(11,end);
+
+    position: absolute;
+}
+.player[destroyed="true"] .player-explode
+{
+    background-image: url("./assets/img/explode.png"); 
+    animation-name: explode;
+}
+.player[destroyed="true"] :is(.player-background,.player-shadow)
+{
+    animation: disappear 0.2s forwards;
+}
+
+
+
+@keyframes explode
+{
+    0% {background-position: 0% 100%;}
+    100% {background-position: 100% 100%;}    
+}
+@keyframes disappear
+{
+    0% {}
+    100% {background-image: none;}
+}
+
+.enemy
+{
+    width: 150px; aspect-ratio: 1;
+
+    position: absolute;
+    top: 0; left: 0;
+}
+.enemy-background
+{
+    width: 100%; height: 100%;
+
+    background-image: url("assets/img/enemy.png");
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    filter: drop-shadow(0 0 10px magenta);
+
+    position: absolute;
+}
+.enemy-explode
+{
+    width: 100%; height: 100%;
+
+    background-size: 1200% 100%;
+    background-position: 0% 100%;
+
+    animation: 0.5s forwards steps(11,end);
+
+    position: absolute;
+}
+.enemy-collider
+{
+    width: 100px; height: 100px;
+
+    /* border: 2px solid lime; */
+
+    position: absolute;
+}
+.enemy[destroyed="true"] .enemy-explode
+{
+    background-image: url("./assets/img/explode.png"); 
+    animation-name: explode;
+}
+.enemy[destroyed="true"] .enemy-background
+{
+    animation: disappear 0.25s forwards;
+}
+@keyframes bullet-shoot
+{
+    0% {background-position: 0% 100%;}
+    100% {background-position: 100% 100%;}
+}
+.bullet
+{
+    width: 30px; aspect-ratio: 1;
+
+    position: absolute;
+    top: 0; left: 0;
+
+}
+.enemy-bullet >.bullet-background
+{
+    background-image: url("assets/img/enemy-bullet.png");
+}
+.bullet-background
+{
+    width: 100%; height: 100%;
+
+    background-image: url("assets/img/bullet.png");
+    background-size: 700% 100%;
+    background-position: 0% 100%;
+
+    /* border: 2px solid red; */
+
+    position: absolute;
+    
+    animation: bullet-shoot 0.1s forwards steps(6,end);
+}
+.bullet-collider
+{
+    width: 15px; height: 15px;
+
+    position: absolute;
+
+    /* border: 2px solid lime; */
+}

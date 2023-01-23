@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Document</title>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body onresize="handleResize();" onload="handleResize();">
+    <div class="page-container">
+        <iframe class="game-frame" src="space-game/space-game.html" id="gameframe"></iframe>
+    </div>
+    <script>
+        {
+            let gameFrame = window.gameframe;
+
+            function handleResize()
+            {
+                // console.log(window.innerHeight);
+                gameFrame.style.scale = window.innerHeight <= 600 ? 0.8*window.innerHeight/600 : 1;
+            }
+        }
+    </script>
+</body>
+</html>
