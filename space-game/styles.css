@@ -10,6 +10,22 @@
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
 }
+.flex-center
+{
+    display: flex;
+    justify-content: center; align-items: center;
+}
+.flex-row
+{
+    display: flex;
+    justify-content: space-between; align-items: center;
+}
+.flex-column
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; align-items: center;
+}
 body[active="true"] :is(.game-window-background,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
 {
     animation-play-state: running;
@@ -22,7 +38,7 @@ body[active="false"] :is(.game-window-background,.player,.player-background,.ene
 {
     animation-play-state: paused;
 }
-body[started="false"] :is(.player,.score-label,.health-bar,.game-paused-window,.game-over-window,.pause-button)
+body[started="false"] :is(.player,.score-label,.health-bar,.game-paused-window,.game-over-window,.game-options-window,.game-option-buttons)
 {
     display: none;
 }
@@ -46,11 +62,6 @@ body[controls="touch"] .keyboard-guide
     100% {opacity: 0;}   
 }
 
-.flex-center
-{
-    display: flex;
-    justify-content: center; align-items: center;
-}
 .page-container
 {
     width: 100%; height: 100%;
@@ -111,9 +122,10 @@ body[controls="touch"] .keyboard-guide
 
     z-index: 1;
 }
-.game-over-window, .game-paused-window, .game-start-window
+.game-over-window, .game-paused-window, .game-start-window, .game-options-window
 {
-    height: 300px; aspect-ratio: 1;
+    min-height: 200px; max-height: fit-content;
+    min-width: 300px;
 
     background-color: rgba(50, 205, 50, 0.1);
     color: limegreen;
@@ -124,10 +136,6 @@ body[controls="touch"] .keyboard-guide
     box-shadow: 0 0 10px black;
 
     padding: 20px;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; align-items: center;
 
     transform: scaleX(0);
     transition: transform 0.2s ease-in-out;
@@ -144,9 +152,6 @@ body[controls="touch"] .keyboard-guide
     bottom: 0; left: 0;
 
     opacity: 1;
-
-    display: flex;
-    justify-content: space-between; align-items: center;
 
     z-index: 1;
 
@@ -221,7 +226,10 @@ body[controls="touch"] .keyboard-guide
 {
     transform: scaleX(1);
 }
-
+.game-overlay[window="gameOptions"] .game-options-window
+{
+    transform: scaleX(1);
+}
 .window-label
 {
     font-size: 30pt;
@@ -234,9 +242,6 @@ body[controls="touch"] .keyboard-guide
 .game-over-score-label
 {
     font-size: 18pt;
-
-    display: flex;
-    justify-content: center; align-items: center;
     /* color: red; */
 }
 .game-over-score-label[new-highscore="true"]
@@ -275,7 +280,28 @@ body[controls="touch"] .keyboard-guide
 {
     scale: 1.1;
 }
+.game-options-section
+{
+    padding-bottom: 20px;
+}
+/* .game-options-label
+{
+}
+.game-options-fps-row
+{
+    
+} */
+.game-options-fps-button
+{
+    width: 50px; aspect-ratio: 1;
+}
+.game-options-fps-button[selected="true"]
+{
+    background-color: limegreen;
+    color: rgb(20, 75, 20);
 
+    font-weight: 600;
+}
 
 @keyframes lose-point
 {
@@ -313,9 +339,6 @@ body[controls="touch"] .keyboard-guide
     border: 3px solid limegreen;
     padding: 10px;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between; align-items: center;
     gap: 10px;
 
     position: absolute;
@@ -338,25 +361,27 @@ body[controls="touch"] .keyboard-guide
 {
     animation: lose-point 0.2s ease-in-out 4 forwards;
 }
-.pause-button
+.game-pause-buttons
 {
-    width: 50px; height: 50px;
-    font-size: 40pt;
+    width: 50px;
     margin: 20px;
 
-    background-color: rgba(50, 205, 50, 0.2);
-
-    border: 3px solid limegreen;
-
-    display: flex;
-    justify-content: center; align-items: center;
+    gap: 10px;
 
     position: absolute;
     top: 0; right: 0;
 
     z-index: 1;
 }
+.game-pause-buttons > .window-button
+{
+    width: 50px; height: 50px;
+    font-size: 30pt;
 
+    background-color: rgba(50, 205, 50, 0.2);
+
+    border: 3px solid limegreen;
+}
 @keyframes damaged
 {
     0% {opacity: 1;}

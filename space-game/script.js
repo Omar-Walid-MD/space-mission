@@ -7,9 +7,9 @@ let rightButton = window.rightbutton;
 let leftButton = window.leftbutton;
 let shootButton = window.shootbutton;
 
-let gameStart = window.gamestart;
-let gamePaused = window.gamepaused;
-let gameOver = window.gameover;
+// let gameStart = window.gamestart;
+// let gamePaused = window.gamepaused;
+// let gameOver = window.gameover;
 let audioContainer = window.audiocontainer
 let scoreLabel = window.scorelabel;
 let healthBar = window.healthbar;
@@ -39,10 +39,10 @@ let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
 
-let frameRate = 12;
+let frameRate = 30;
 let speed = 5;
-let playerRate = speed*1000/frameRate/10;
-let rate = 1000/frameRate/10;
+let playerRate = speed*100/frameRate;
+let rate = 100/frameRate;
 
 let initialSpawnRate = 30; //per minute
 let maxSpawnRate = 200;
@@ -51,6 +51,7 @@ let spawnRate = initialSpawnRate;
 let colliders = [];
 let enemies = [];
 let timers = [];
+let newTimers = [];
 
 let shootSound = "./assets/audio/shoot-sound.mp3";//new Audio("./assets/audio/shoot-sound.mp3");
 let enemyShootSound = "./assets/audio/shoot-sound.mp3";//new Audio("./assets/audio/enemy-shoot-sound.wav");
@@ -102,17 +103,19 @@ class Enemy
         else
         {
             // /console.log("outside function: " + this.enemyCycle);
-            removeTimer(this.enemyCycle,"interval");
+            // removeTimer(this.enemyCycle,"interval");
+            this.timer.remove();
         }
     }
 
     startCycle()
     {
+        this.timer = new Timer("interval",this.shootInterval,this.enemyCycleFunction);
         //console.log("started cycle");
-        this.enemyCycle = setInterval(() => {
-            this.enemyCycleFunction();
-        }, this.shootInterval);
-        addTimer(this.enemyCycle,"interval",this.shootInterval,this.enemyCycleFunction,"shootCycle");
+        // this.enemyCycle = setInterval(() => {
+        //     this.enemyCycleFunction();
+        // }, this.shootInterval);
+        // addTimer(this.enemyCycle,"interval",this.shootInterval,this.enemyCycleFunction,"shootCycle");
 
     }
 
@@ -137,21 +140,30 @@ class Enemy
     {
         this.element.setAttribute("destroyed","true");
         playSound(explodeSound);
-        removeTimer(this.enemyCycle,"interval");
 
-        let timerId;
-        let timerFunction = () => {
+        this.timer.remove();
 
+        new Timer("timeout",1000,() => {
             this.element.remove();
             enemies = enemies.filter((enemyInList)=>enemyInList!==this);
-            console.log("destroyed");
-            removeTimer(timerId,"timeout");
-        }
-        timerId = setTimeout(() => {
-            timerFunction();
-        }, 1000);
+            // console.log("destroyed");
+        });
 
-        addTimer(timerId,"timeout",1000,timerFunction);
+        // removeTimer(this.enemyCycle,"interval");
+
+        // let timerId;
+        // let timerFunction = () => {
+
+        //     this.element.remove();
+        //     enemies = enemies.filter((enemyInList)=>enemyInList!==this);
+        //     console.log("destroyed");
+        //     removeTimer(timerId,"timeout");
+        // }
+        // timerId = setTimeout(() => {
+        //     timerFunction();
+        // }, 1000);
+
+        // addTimer(timerId,"timeout",1000,timerFunction);
         
     }
 }
@@ -174,6 +186,78 @@ class Bullet
         this.element.style.left = left;
     }
 }
+class Timer
+{
+    constructor(timerType,time,func)
+    {
+        this.timerType = timerType;
+        this.time = time;
+        this.func = func;
+        this.last = Date.now();
+        this.remainder = 0;
+        this.paused = false;
+        this.id = makeId(5);
+
+        newTimers.push(this);
+
+        return this;
+    }
+
+    setTime = (newTime) => {
+        this.time = newTime;
+    }
+
+    execute = () => {
+        // console.log("executing");
+        let t = this.remainder===0 ? this.time : this.remainder;
+        if(Date.now() >= this.last + t && !this.paused)
+        {
+            this.func();
+            this.last = Date.now();
+
+            if(this.timerType==="timeout")
+            {
+                this.remove();
+                return;
+            }
+            if(this.remainder!==0)
+            {
+                this.remainder = 0;
+            }
+        }
+    }
+
+    pause = () => {
+        this.paused = true;
+        // this.remainder = this.time - (Date.now()-this.last);
+        this.remainder = (this.remainder===0 ? this.time : this.remainder) - ((Date.now() - this.last) % this.time)
+        console.log(this.id +": " + this.remainder);
+    }
+
+    resume = () => {
+        this.last = Date.now();
+        this.paused = false;
+    }
+
+    remove = () => {
+        newTimers = newTimers.filter((timer)=>timer.id!==this.id);
+    }
+}
+function setAllNewTimers(enabled)
+{
+    if(enabled)
+    {
+        newTimers.forEach(timer => {
+            timer.resume();
+        });
+    }
+    else
+    {
+        newTimers.forEach(timer => {
+            timer.pause();
+        });
+    }
+}
 
 document.body.onkeydown = function(e)
 {
@@ -183,12 +267,12 @@ document.body.onkeydown = function(e)
     if(active)
     {
         if(e.which===32) shoot();
-        if(e.which===27) setGamePausedWindow(true);
+        if(e.which===27) setGameWindow(1);
         if(e.which===69) playSound("./assets/audio/shoot-sound.mp3");
     }
     else
     {
-        if(e.which===27) setGamePausedWindow(false);
+        if(e.which===27) setGameWindow(4);
     }
 }
 document.body.onkeyup = function(e)
@@ -227,16 +311,20 @@ function shoot()
         }, 100);
 
         canShoot = false;
-        let timerFunction = () => {
 
+        new Timer("timeout",500,()=>{
             canShoot = true;
-            //console.log("can shoot now");
-            removeTimer(timerId,"timeout");
-        }
-        let timerId = setTimeout(() => {
-            timerFunction();
-        }, 500);
-        addTimer(timerId,"timeout",500,timerFunction);
+        });
+        // let timerFunction = () => {
+
+            
+        //     //console.log("can shoot now");
+        //     removeTimer(timerId,"timeout");
+        // }
+        // let timerId = setTimeout(() => {
+        //     timerFunction();
+        // }, 500);
+        // addTimer(timerId,"timeout",500,timerFunction);
         playSound(shootSound);
     }
 }
@@ -251,7 +339,7 @@ function takeDamage()
         player.setAttribute("destroyed","true");
         playSound(explodeSound);
         setTimeout(() => {
-            setGameOverWindow(true);
+            setGameWindow(3);
         }, 3000);
         return;
     }
@@ -262,18 +350,22 @@ function takeDamage()
 
     }
 
-    let timerId;
-    let timerFunction = function()
-    {
+    // let timerId;
+    // let timerFunction = function()
+    // {
+        
+    //     removeTimer(timerId,"timeout");
+    // }
+    // timerId = setTimeout(() => {
+    //     timerFunction();
+    // }, 5000);
+
+    // addTimer(timerId,"timeout",5000,timerFunction);
+
+    new Timer("timeout",5000,()=>{
         player.setAttribute("damaged","false");
         canTakeDamage = true;
-        removeTimer(timerId,"timeout");
-    }
-    timerId = setTimeout(() => {
-        timerFunction();
-    }, 5000);
-
-    addTimer(timerId,"timeout",5000,timerFunction);
+    })
 }
 function getCollisions(subject,colliisionClass)
 {
@@ -324,7 +416,7 @@ function spawnEnemy()
     enemy.element.style.left = (direction ? (gameWindow.getBoundingClientRect().width + enemy.element.getBoundingClientRect().width) : (-enemy.element.getBoundingClientRect().width)) + "px";
     //console.log(gameWindow.getBoundingClientRect().right);
 
-    console.log("spawned");
+    // console.log("spawned");
     
 }
 function moveEnemies()
@@ -341,13 +433,6 @@ function moveEnemies()
         }
     });
 }
-// function setEnemiesActive(enabled)
-// {
-//     enemies.forEach(enemy => {
-//         enabled ? enemy.startCycle() : enemy.pauseCycle();
-//     });
-//     console.log(enemies);
-// }
 function setAllTimers(enabled)
 {
     if(enabled)
@@ -468,10 +553,14 @@ function resetGame()
     });
     enemies = [];
 
-    timers.forEach(timer => {
-        removeTimer(timer.timerId);
+    // timers.forEach(timer => {
+    //     removeTimer(timer.timerId);
+    // });
+    // timers = [];
+    newTimers.forEach(timer => {
+        timer.remove();
     });
-    timers = [];
+    newTimers = [];
 
     score = 0;
     updateScore();
@@ -489,32 +578,18 @@ function resetGame()
     
     start();
 }
-function setGameStartWindow(enabled)
+function setGameWindow(newWindowIndex)
 {
-    if(enabled)
-    {
-        active = false;
-        gameOverlay.setAttribute("window","gameStart");
-        document.body.setAttribute("active", "false");
-        setAllTimers(!enabled);
-    }
-    else
-    {
-        active = true;
-        gameOverlay.setAttribute("window","none");
-        document.body.setAttribute("active","true");
-        playSound(uiSound);
-        start();
-    }   
-}
-function setGameOverWindow(enabled)
-{
-    let lastHighscore = localStorage.getItem("spaceGameHighscore");
-    let gameOverScoreLabel = gameWindow.querySelector(".game-over-score-label");
-    let gameOverHighscoreLabel = gameWindow.querySelector(".game-over-highscore-label");
+    let windowList = ["gameStart","gamePaused","gameOptions","gameOver","none"];
+    let newWindow = windowList[newWindowIndex];
+    let currentWindow = gameOverlay.getAttribute("window");
 
-    if(enabled)
+    if(newWindow==="gameOver")
     {
+        let lastHighscore = localStorage.getItem("spaceGameHighscore");
+        let gameOverScoreLabel = gameWindow.querySelector(".game-over-score-label");
+        let gameOverHighscoreLabel = gameWindow.querySelector(".game-over-highscore-label");
+
         if(score > lastHighscore)
         {
             gameOverScoreLabel.innerHTML = "أعلى نقاط جديدة: " + score;
@@ -530,44 +605,63 @@ function setGameOverWindow(enabled)
         gameOverlay.setAttribute("window","gameOver");
         active = false;
         document.body.setAttribute("active", "false");
-        setAllTimers(false);
+        // setAllTimers(false);
+        setAllNewTimers(false);
     }
-    else
+    else if(newWindow==="gamePaused"||newWindow==="gameOptions")
     {
-        gameOverlay.setAttribute("window","none");
-        document.body.setAttribute("active","true");
-        resetGame();
-    }
-    playSound(uiSound);
-    // console.log("played sound");
-    
-}
-function setGamePausedWindow(enabled)
-{
-    if(gameOverlay.getAttribute("window")!=="gameOver" && gameOverlay.getAttribute("window")!=="gameStart" && health > 0)
-    {
-        if(enabled&&active)
+        if(currentWindow!=="gameOver" && currentWindow!=="gameStart" && health > 0)
         {
-            //console.log("paused");
-            active = false;
-            gameOverlay.setAttribute("window","gamePaused");
-            document.body.setAttribute("active", "false");
-            setAllTimers(!enabled);
-            playSound(uiSound);
+            if(active)
+            {
+                //console.log("paused");
+                active = false;
+                gameOverlay.setAttribute("window",newWindow);
+                document.body.setAttribute("active", "false");
+                // setAllTimers(false);
+                setAllNewTimers(false);
+            }
         }
-        else if(!enabled&&!active)
+    }
+    else if(newWindow==="gameStart")
+    {
+        active = false;
+        gameOverlay.setAttribute("window","gameStart");
+        document.body.setAttribute("active", "false");
+        // setAllTimers(false);
+        setAllNewTimers(false);
+    }
+    else if(newWindow==="none")
+    {
+        if(currentWindow==="gameOver")
+        {
+            gameOverlay.setAttribute("window","none");
+            document.body.setAttribute("active","true");
+            resetGame();
+        }
+        else if(currentWindow==="gamePaused"||currentWindow==="gameOptions")
+        {
+            if(!active)
+            {
+
+                active = true;
+                gameOverlay.setAttribute("window","none");
+                document.body.setAttribute("active","true");
+                // setAllTimers(true);
+                setAllNewTimers(true);
+            }
+        }
+        else if(currentWindow==="gameStart")
         {
             active = true;
             gameOverlay.setAttribute("window","none");
             document.body.setAttribute("active","true");
-            setAllTimers(!enabled);
-            playSound(uiSound);
+            start();
         }
-        
-        // console.log("played sound");
-        
     }
+    playSound(uiSound);
 }
+
 function updateScore()
 {
     scoreLabel.innerHTML = score;
@@ -630,54 +724,88 @@ function start()
     let delayTimer;
     let delayTimerFunction = () => {
 
-        let timerObject;
-        let spawnTimerFunction = () => {
-            spawnEnemy();
-            if(timerObject && 60.0/spawnRate*1000!==timerObject.maxTime)
-            {
-                clearInterval(timerObject.timerId);
-                timerObject.maxTime = 60.0/spawnRate*1000;
-                timerObject.timerId = setInterval(() => {
-                    timerObject.func();
-                },timerObject.maxTime);
-            }
-        }
-        let spawnTimer = setInterval(function()
-        {
-            spawnTimerFunction();
-        }, 60.0/spawnRate*1000);
+        // let timerObject;
+        // let spawnTimerFunction = () => {
+        //     spawnEnemy();
+        //     if(timerObject && 60.0/spawnRate*1000!==timerObject.maxTime)
+        //     {
+        //         clearInterval(timerObject.timerId);
+        //         timerObject.maxTime = 60.0/spawnRate*1000;
+        //         timerObject.timerId = setInterval(() => {
+        //             timerObject.func();
+        //         },timerObject.maxTime);
+        //     }
+        // }
+        // let spawnTimer = setInterval(function()
+        // {
+        //     spawnTimerFunction();
+        // }, 60.0/spawnRate*1000);
     
-        timerObject = addTimer(spawnTimer,"interval",60.0/spawnRate*1000,spawnTimerFunction);
+        // timerObject = addTimer(spawnTimer,"interval",60.0/spawnRate*1000,spawnTimerFunction);
+        let spawnTimer;
+        spawnTimer = new Timer("interval",60.0/spawnRate*1000,()=>{
+            spawnEnemy();
+            spawnTimer.setTime(60.0/spawnRate*1000);
+            console.log(spawnTimer.time);
+            // if(rateChangeTimer && 60.0/spawnRate*1000!==rateChangeTimer.time)
+            // {
+            //     clearInterval(timerObject.timerId);
+            //     timerObject.maxTime = 60.0/spawnRate*1000;
+            //     timerObject.timerId = setInterval(() => {
+            //         timerObject.func();
+            //     },timerObject.maxTime);
+            // }
+        });
 
-        let updateRateFunction = () => {
+        // let updateRateFunction = () => {
+            
+        // }
+        // let updateRate = setInterval(() => {
+        //     updateRateFunction();
+        // }, 10*1000);
+    
+        // addTimer(updateRate,"interval",10*1000,updateRateFunction);
+        // removeTimer(delayTimer,"timeout");   
+        // console.log("started");
+
+        new Timer("interval",10*1000,()=>{
             if(spawnRate*1.1<maxSpawnRate)
             {
                 spawnRate*= 1.1;
+                console.log("spawnrate: "+spawnRate);
             }
             if(parseFloat(getComputedStyle(gameBackground).animationDuration.slice(0,-1)*0.9>5))
             {
                 gameBackground.style.animationDuration = parseFloat(getComputedStyle(gameBackground).animationDuration.slice(0,-1))*0.9 + "s";
             }
-        }
-        let updateRate = setInterval(() => {
-            updateRateFunction();
-        }, 10*1000);
-    
-        addTimer(updateRate,"interval",10*1000,updateRateFunction);
-        removeTimer(delayTimer,"timeout");   
-        console.log("started"); 
+        });
     }
 
-    delayTimer = setTimeout(() => {
-        delayTimerFunction();
-    }, startDelay);
+    // delayTimer = setTimeout(() => {
+    //     delayTimerFunction();
+    // }, startDelay);
 
-    addTimer(delayTimer,"timeout",startDelay,delayTimerFunction);
-    console.log("starting in 5 seconds");
+    // addTimer(delayTimer,"timeout",startDelay,delayTimerFunction);
+    // console.log("starting in 5 seconds");
+
+    new Timer("timeout",startDelay,delayTimerFunction);
 
 
 };
+function setFPS(fps)
+{
+    let fpsButtons = document.querySelectorAll(".game-options-fps-button");
 
+    frameRate = fps;
+    playerRate = speed*100/frameRate;
+    rate = 100/frameRate;
+
+    fpsButtons.forEach(b => {
+        b.setAttribute("selected",fps===b.value);
+    });
+
+    console.log("updated frame rate");
+}
 
 setPlatformControls();
 // game loop();
@@ -706,6 +834,10 @@ setInterval(function(){
     
         moveEnemies();
         moveBullets();
+
+        newTimers.forEach(timer => {
+            timer.execute();
+        });
     }
 
 },1000/frameRate);
