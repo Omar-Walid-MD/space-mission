@@ -39,10 +39,11 @@ let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
 
-let frameRate = 30;
+let frameRate = 12;
 let speed = 5;
 let playerRate = speed*100/frameRate;
 let rate = 100/frameRate;
+let gameLoop = 0;
 
 let initialSpawnRate = 30; //per minute
 let maxSpawnRate = 200;
@@ -792,6 +793,8 @@ function start()
 
 
 };
+
+let gameLoopFunction;
 function setFPS(fps)
 {
     let fpsButtons = document.querySelectorAll(".game-options-fps-button");
@@ -800,16 +803,25 @@ function setFPS(fps)
     playerRate = speed*100/frameRate;
     rate = 100/frameRate;
 
+    // player.style.left = playerX * playerRate + "px";
+    console.log(playerX);
+    playerX = getComputedStyle(player).left.slice(0,-2) / playerRate;
+
+    gameBackground.style.animationTimingFunction = "steps(" + (1000 * frameRate / 100) + ")";
+
+    console.log(fpsButtons);
     fpsButtons.forEach(b => {
-        b.setAttribute("selected",fps===b.value);
+        b.setAttribute("selected",fps===parseInt(b.value) ? "true" : "false");
     });
 
     console.log("updated frame rate");
-}
 
+    clearInterval(gameLoop);
+    gameLoop = setInterval(gameLoopFunction,1000/frameRate);
+}
 setPlatformControls();
 // game loop();
-setInterval(function(){
+gameLoopFunction = function(){
 
     if(active)
     {
@@ -840,4 +852,6 @@ setInterval(function(){
         });
     }
 
-},1000/frameRate);
+};
+
+gameLoop = setInterval(gameLoopFunction,1000/frameRate);
