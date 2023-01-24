@@ -89,7 +89,7 @@ class Enemy
 
         this.shootInterval = 1200 + Math.sign(Math.random()-0.5) * Math.random()*200;
 
-        this.startCycle();
+        //this.startCycle();
         
     }
 
