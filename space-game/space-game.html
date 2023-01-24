@@ -11,7 +11,9 @@
 <body onblur="setGameWindow(1);" active="false" started="false" controls="unknown">
     <div class="page-container flex-center">
         <div class="game-window flex-center" id="gamewindow">
-            <div class="game-window-background" id="gamebackground"></div>
+            <div class="game-window-background" id="gamebackground">
+                <div class="background-image"></div>
+            </div>
             <h3 class="score-label" id="scorelabel">0</h3>
             <div class="health-bar flex-column" id="healthbar"></div>
             <div class="game-pause-buttons flex-column">
@@ -54,11 +56,11 @@
                     <h1>الخيارات</h1>
                     <div class="game-options-section">
                         <h2 class="game-options-label">معدل الحركة</h2>
-                        <div class="game-options-fps-row">
-                            <button class="game-options-fps-button window-button" value=12 onclick="setFPS(12);" selected="true">12</button>
-                            <button class="game-options-fps-button window-button" value=24 onclick="setFPS(24);" selected="false">24</button>
-                            <button class="game-options-fps-button window-button" value=30 onclick="setFPS(30);" selected="false">30</button>
-                            <button class="game-options-fps-button window-button" value=60 onclick="setFPS(60);" selected="false">60</button>
+                        <div class="game-options-fps-row flex-row">
+                            <button class="game-options-fps-button window-button flex-center" value=12 onclick="setFPS(12);" selected="true">12</button>
+                            <button class="game-options-fps-button window-button flex-center" value=24 onclick="setFPS(24);" selected="false">24</button>
+                            <button class="game-options-fps-button window-button flex-center" value=30 onclick="setFPS(30);" selected="false">30</button>
+                            <button class="game-options-fps-button window-button flex-center" value=60 onclick="setFPS(60);" selected="false">60</button>
                         </div>
                     </div>
                     <button class="window-button" onclick="setGameWindow(4);">إستئناف</button>

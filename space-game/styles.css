@@ -27,19 +27,19 @@
     flex-direction: column;
     justify-content: space-between; align-items: center;
 }
-body[active="true"] :is(.game-window-background,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
+body[active="true"] :is(.background-image,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
 {
     animation-play-state: running;
 }
-/* body[active="false"] .game-window-background, body[active="false"] .player, body[active="false"] .player-background, body[active="false"] .enemy-explode,.player-explode
+/* body[active="false"] .background-image, body[active="false"] .player, body[active="false"] .player-background, body[active="false"] .enemy-explode,.player-explode
 {
     animation-play-state: paused;
 } */
-body[active="false"] :is(.game-window-background,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
+body[active="false"] :is(.background-image,.player,.player-background,.enemy-explode,.player-explode,.game-guide)
 {
     animation-play-state: paused;
 }
-body[started="false"] :is(.player,.score-label,.health-bar,.game-paused-window,.game-over-window,.game-options-window,.game-option-buttons)
+body[started="false"] :is(.player,.score-label,.health-bar,.game-paused-window,.game-over-window,.game-options-window,.game-pause-buttons)
 {
     display: none;
 }
@@ -76,9 +76,14 @@ body[controls="touch"] .keyboard-guide
 {
     display: none;
 }
-@keyframes background-roll {
+/* @keyframes background-roll {
     0% {background-position: 0% 100%;}
     100% {background-position: 0% -15%;}
+} */
+@keyframes background-roll
+{
+    0% {transform: translateY(-50%);}
+    100% {transform: translateY(0%);} 
 }
 .game-window
 {
@@ -97,18 +102,31 @@ body[controls="touch"] .keyboard-guide
 {
     width: 101%; height: 101%;
 
-    background-color: white;
+    /* background-color: white;
     background-image: url("assets/img/bg.png");
     background-size: 200%;
-    background-position: 100% 0%;
+    background-position: 100% 0%; */
     filter: blur(1px);
 
     position: absolute;
 
     /* animation: background-roll infinite linear; */
-    animation-duration: 10s;
-    animation-timing-function: steps(100);
+    /* animation-duration: 10s;
+    animation-timing-function: steps(100); */
 
+    overflow: hidden;
+}
+.background-image
+{
+    width: 100%; height: 4000px;
+
+    background-image: url("assets/img/bg.png");
+    background-size: 100% 50%;
+    background-repeat: repeat;
+
+    position: absolute;
+
+    animation: background-roll 5s infinite linear;
 }
 .game-overlay
 {
@@ -273,6 +291,9 @@ body[controls="touch"] .keyboard-guide
     border-radius: 10px;
     
     padding: 5px;
+
+    display: flex;
+    justify-content: center; align-items: center;
     
     outline: none;
     cursor: pointer;
@@ -285,16 +306,13 @@ body[controls="touch"] .keyboard-guide
 {
     padding-bottom: 20px;
 }
-/* .game-options-label
-{
-}
 .game-options-fps-row
 {
-    
-} */
+    gap: 10px;
+}
 .game-options-fps-button
 {
-    width: 50px; aspect-ratio: 1;
+    width: 50px; height: 50px;
 }
 .game-options-fps-button[selected="true"]
 {

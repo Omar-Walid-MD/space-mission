@@ -608,6 +608,7 @@ function setGameWindow(newWindowIndex)
         document.body.setAttribute("active", "false");
         // setAllTimers(false);
         setAllNewTimers(false);
+        playSound(uiSound);
     }
     else if(newWindow==="gamePaused"||newWindow==="gameOptions")
     {
@@ -621,6 +622,7 @@ function setGameWindow(newWindowIndex)
                 document.body.setAttribute("active", "false");
                 // setAllTimers(false);
                 setAllNewTimers(false);
+                playSound(uiSound);
             }
         }
     }
@@ -631,9 +633,11 @@ function setGameWindow(newWindowIndex)
         document.body.setAttribute("active", "false");
         // setAllTimers(false);
         setAllNewTimers(false);
+        playSound(uiSound);
     }
     else if(newWindow==="none")
     {
+        playSound(uiSound);
         if(currentWindow==="gameOver")
         {
             gameOverlay.setAttribute("window","none");
@@ -660,7 +664,6 @@ function setGameWindow(newWindowIndex)
             start();
         }
     }
-    playSound(uiSound);
 }
 
 function updateScore()
