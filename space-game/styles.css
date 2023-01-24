@@ -9,6 +9,7 @@
     direction: rtl;
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
+    user-select: none;
 }
 .flex-center
 {
@@ -104,7 +105,7 @@ body[controls="touch"] .keyboard-guide
 
     position: absolute;
 
-    animation: background-roll infinite linear;
+    /* animation: background-roll infinite linear; */
     animation-duration: 10s;
     animation-timing-function: steps(100);
 
