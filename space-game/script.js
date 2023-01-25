@@ -39,7 +39,7 @@ let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
 
-let frameRate = 12;
+let frameRate = 60;
 let speed = 5;
 let playerRate = speed*100/frameRate;
 let rate = 100/frameRate;
@@ -857,10 +857,10 @@ gameLoopFunction = function(){
 };
 
 let loop = () => {
-    setTimeout(() => {
+    // setTimeout(() => {
         gameLoopFunction();
         window.requestAnimationFrame(loop);
-    }, 1000/frameRate);
+    // }, 1000/frameRate);
 }
 window.requestAnimationFrame(loop);
 
