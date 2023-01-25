@@ -810,7 +810,7 @@ function setFPS(fps)
     console.log(playerX);
     playerX = getComputedStyle(player).left.slice(0,-2) / playerRate;
 
-    gameBackground.style.animationTimingFunction = "steps(" + (1000 * frameRate / 100) + ")";
+    // gameBackground.style.animationTimingFunction = "steps(" + (1000 * frameRate / 100) + ")";
 
     console.log(fpsButtons);
     fpsButtons.forEach(b => {
@@ -819,8 +819,8 @@ function setFPS(fps)
 
     console.log("updated frame rate");
 
-    clearInterval(gameLoop);
-    gameLoop = setInterval(gameLoopFunction,1000/frameRate);
+    // clearInterval(gameLoop);
+    // gameLoop = setInterval(gameLoopFunction,1000/frameRate);
 }
 setPlatformControls();
 // game loop();
@@ -854,7 +854,16 @@ gameLoopFunction = function(){
             timer.execute();
         });
     }
-
 };
 
-gameLoop = setInterval(gameLoopFunction,1000/frameRate);
+let loop = () => {
+    setTimeout(() => {
+        gameLoopFunction();
+        window.requestAnimationFrame(loop);
+    }, 1000/frameRate);
+}
+window.requestAnimationFrame(loop);
+
+// gameLoop = setInterval(() => {
+//     gameLoopFunction();
+// }, 1000/frameRate);
