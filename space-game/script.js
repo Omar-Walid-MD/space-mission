@@ -39,7 +39,7 @@ let fullHealth = 3;
 let health = fullHealth;
 let score = 0;
 
-let frameRate = 60;
+let frameRate = 12;
 let speed = 5;
 let playerRate = speed*100/frameRate;
 let rate = 100/frameRate;
@@ -819,8 +819,8 @@ function setFPS(fps)
 
     console.log("updated frame rate");
 
-    // clearInterval(gameLoop);
-    // gameLoop = setInterval(gameLoopFunction,1000/frameRate);
+    clearInterval(gameLoop);
+    gameLoop = setInterval(gameLoopFunction,1000/frameRate);
 }
 setPlatformControls();
 // game loop();
@@ -856,14 +856,14 @@ gameLoopFunction = function(){
     }
 };
 
-let loop = () => {
-    // setTimeout(() => {
-        gameLoopFunction();
-        window.requestAnimationFrame(loop);
-    // }, 1000/frameRate);
-}
-window.requestAnimationFrame(loop);
+// let loop = () => {
+//     // setTimeout(() => {
+//         gameLoopFunction();
+//         window.requestAnimationFrame(loop);
+//     // }, 1000/frameRate);
+// }
+// window.requestAnimationFrame(loop);
 
-// gameLoop = setInterval(() => {
-//     gameLoopFunction();
-// }, 1000/frameRate);
+gameLoop = setInterval(() => {
+    gameLoopFunction();
+}, 1000/frameRate);
