@@ -359,7 +359,7 @@ class BackgroundImage
 //             let windowMid = gameWindow.getBoundingClientRect().left+gameWindow.getBoundingClientRect().width;
 //             let enemyMid = this.element.getBoundingClientRect().left+this.element.getBoundingClientRect().width;
 //             let midPointRatio = 1-Math.abs(windowMid-enemyMid)/windowMid;
-            playSound(enemyShootSound,(0.5 * midPointRatio));
+            // playSound(enemyShootSound,(0.5 * midPointRatio));
 //             // console.log("shoot");
 //         }
 //     }
