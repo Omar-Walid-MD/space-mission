@@ -220,7 +220,7 @@ class Player extends GameObject
             //     timerFunction();
             // }, 500);
             // addTimer(timerId,"timeout",500,timerFunction);
-            playSound(shootSound);
+            // playSound(shootSound);
         }
     }
 
@@ -236,7 +236,7 @@ class Player extends GameObject
             {
                 // player.setAttribute("destroyed","true");
                 player.image = "";
-                playSound(explodeSound);
+                // playSound(explodeSound);
                 setTimeout(() => {
                     setGameWindow(3);
                 }, 3000);
@@ -244,7 +244,7 @@ class Player extends GameObject
             }
             else
             {
-                playSound(damageSound);
+                // playSound(damageSound);
                 player.image = "./assets/img/spaceship-damaged.png";
                 // player.setAttribute("damaged","true");
     
@@ -359,7 +359,7 @@ class BackgroundImage
 //             let windowMid = gameWindow.getBoundingClientRect().left+gameWindow.getBoundingClientRect().width;
 //             let enemyMid = this.element.getBoundingClientRect().left+this.element.getBoundingClientRect().width;
 //             let midPointRatio = 1-Math.abs(windowMid-enemyMid)/windowMid;
-//             playSound(enemyShootSound,(0.5 * midPointRatio));
+            playSound(enemyShootSound,(0.5 * midPointRatio));
 //             // console.log("shoot");
 //         }
 //     }
@@ -367,7 +367,7 @@ class BackgroundImage
 //     destroy()
 //     {
 //         this.element.setAttribute("destroyed","true");
-//         playSound(explodeSound);
+        playSound(explodeSound);
 
 //         this.timer.remove();
 
@@ -431,7 +431,7 @@ class Enemy extends GameObject
     {
         console.log("enemy shoot");
         let bullet = new Bullet(this.top+99,this.left+this.width/2-15,30,30,"./assets/img/b.png",10,["player"]);
-        playSound(enemyShootSound);
+        // playSound(enemyShootSound);
     }
 
     onHit()
@@ -574,7 +574,7 @@ document.body.onkeydown = function(e)
     {
         if(e.which===32) player.shoot();
         if(e.which===27) setGameWindow(1);
-        if(e.which===69) playSound("./assets/audio/shoot-sound.mp3");
+        // if(e.which===69) playSound("./assets/audio/shoot-sound.mp3");
     }
     else
     {
@@ -611,7 +611,7 @@ function takeDamage()
     if(health<=0)
     {
         player.setAttribute("destroyed","true");
-        playSound(explodeSound);
+        // playSound(explodeSound);
         setTimeout(() => {
             setGameWindow(3);
         }, 3000);
@@ -619,7 +619,7 @@ function takeDamage()
     }
     else
     {
-        playSound(damageSound);
+        // playSound(damageSound);
         player.setAttribute("damaged","true");
 
     }
@@ -827,7 +827,7 @@ function setGameWindow(newWindowIndex)
         document.body.setAttribute("active", "false");
         // setAllTimers(false);
         setAllNewTimers(false);
-        playSound(uiSound);
+        // playSound(uiSound);
     }
     else if(newWindow==="gamePaused"||newWindow==="gameOptions")
     {
@@ -841,7 +841,7 @@ function setGameWindow(newWindowIndex)
                 document.body.setAttribute("active", "false");
                 // setAllTimers(false);
                 setAllNewTimers(false);
-                playSound(uiSound);
+                // playSound(uiSound);
             }
         }
     }
@@ -852,11 +852,11 @@ function setGameWindow(newWindowIndex)
         document.body.setAttribute("active", "false");
         // setAllTimers(false);
         setAllNewTimers(false);
-        playSound(uiSound);
+        // playSound(uiSound);
     }
     else if(newWindow==="none")
     {
-        playSound(uiSound);
+        // playSound(uiSound);
         if(currentWindow==="gameOver")
         {
             gameOverlay.setAttribute("window","none");
