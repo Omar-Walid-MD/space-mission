@@ -1,3 +1,4 @@
+// GAME VARIABLES
 
 let gameWindow = window.gamewindow;
 let gameOverlay = window.gameoverlay;
@@ -16,13 +17,7 @@ let healthBar = window.healthbar;
 let player;
 let gameBackground;
 
-
-let controls = {
-    65: {pressed: false, func: function(){player.move(-1);}}, //a
-    68: {pressed: false, func: function(){player.move(1);}} //d
-
-};
-
+let started = false;
 let active = false;
 let canShoot = true;
 let canTakeDamage = true;
@@ -32,7 +27,7 @@ let health = fullHealth;
 let score = 0;
 
 let frameRate = 12;
-let speed = 5;
+let speed = 10;
 let playerRate = speed*100/frameRate;
 let rate = 100/frameRate;
 let gameLoop = 0;
@@ -41,17 +36,78 @@ let initialSpawnRate = 30; //per minute
 let maxSpawnRate = 200;
 let spawnRate = initialSpawnRate;
 
-// let colliders = [];
-// let enemies = [];
-// let timers = [];
 let newTimers = [];
 let gameObjects = [];
 
-let shootSound = "./assets/audio/shoot-sound.mp3";//new Audio("./assets/audio/shoot-sound.mp3");
-let enemyShootSound = "./assets/audio/shoot-sound.mp3";//new Audio("./assets/audio/enemy-shoot-sound.wav");
+let shootSound = "./assets/audio/shoot-sound.mp3";
+let enemyShootSound = "./assets/audio/shoot-sound.mp3";
 let damageSound = "./assets/audio/hit.wav";
 let explodeSound = "./assets/audio/explode.wav";
 let uiSound = "./assets/audio/ui.wav";
+
+
+//GAME CONTROLS
+
+let controls = {
+    65:
+    {
+        pressed: false,
+        fired: true,
+        onHold: function(){player.move(-1);},
+        onDown: function(){player.setProperty("scale",{x:-1,y:1});player.animationPlayer.play(steeringAnimation);},
+        onUp: function(){player.setProperty("scale",{x:1,y:1});player.animationPlayer.play(steeringAnimation,true);}
+    }, //a
+    68:
+    {
+        pressed: false,
+        fired: true,
+        onHold: function(){player.move(1);},
+        onDown: function(){player.animationPlayer.play(steeringAnimation);},
+        onUp: function(){player.setProperty("scale",{x:1,y:1});player.animationPlayer.play(steeringAnimation,true);}
+    }, //d
+    32:
+    {
+        pressed: false,
+        fired: true,
+        onDown: function(){player.shoot()}
+    } //space
+};
+
+document.body.onkeydown = function(e)
+{
+    if(controls[e.which])
+    {
+        controls[e.which].pressed = true;
+        // controls[e.which].fired = true;
+    }
+
+    if(active)
+    {
+        if(e.which===27) setGameWindow(1);
+    }
+    else
+    {
+        if(e.which===27) setGameWindow(4);
+    }
+}
+document.body.onkeyup = function(e)
+{
+    if(controls[e.which])
+    {
+        controls[e.which].pressed = false;
+        controls[e.which].fired = true;
+
+        if(controls[e.which].onUp) 
+        {
+            controls[e.which].onUp();
+        }
+    }
+}
+
+rightButton.onpointerdown = () => {controls[68].pressed=true;}; rightButton.onpointerup = rightButton.onpointerleave = () => {controls[68].pressed=false;};
+leftButton.onpointerdown = () => {controls[65].pressed=true;}; leftButton.onpointerup = leftButton.onpointerleave = () => {controls[65].pressed=false;};
+shootButton.onpointerdown = () => {player.shoot()};
+
 
 function setPlatformControls()
 {
@@ -69,12 +125,83 @@ function setPlatformControls()
     }
 }
 
-
-
+// GAME TEMPLATES
+let playerTemplate = {
+    left: canvasWidth/2-50,
+    top: canvasHeight*4/5-50,
+    width: 100,
+    height: 100,
+    colliderPercent: 0.5,
+    speed: speed,
+    image: "./assets/img/spaceship-sprites.png"
+}
+let enemyTemplate = {
+    top: 0,
+    left: 0,
+    width: 100,
+    height: 60,
+    colliderPercent: 1,
+    image: "./assets/img/enemy.png",
+    speed: 5
+}
+let playerBulletTemplate = {
+    width: 30,
+    height: 30,
+    image: "./assets/img/b.png",
+    velocity: -10,
+    collisionMask: ["enemy"]
+}
+let enemyBulletTemplate = {
+    ...playerBulletTemplate,
+    velocity: 10,
+    collisionMask: ["player"]
+}
+let steeringAnimation = {
+    name: "steering",
+    keyframes: [
+        {
+            time: 0,
+            properties:
+            {
+                frame: 1
+            }
+        },
+        {
+            time: 25,
+            properties:
+            {
+                frame: 2
+            }
+        },
+        {
+            time: 50,
+            properties:
+            {
+                frame: 3
+            }
+        },
+        {
+            time: 75,
+            properties:
+            {
+                frame: 4
+            }
+        },
+        {
+            time: 100,
+            properties:
+            {
+                frame: 5
+            }
+        }
+    ],
+    duration: 500
+}
+// GAME CLASSES
 
 class GameObject
 {
-    constructor(top,left,width,height,image=null,backgroundPercent=1,colliderPercent=1,collisionMask)
+    constructor({top,left,width,height,colliderPercent=1,image=null,collisionMask=[]})
     {
         this.top = top;
         this.left = left;
@@ -82,7 +209,6 @@ class GameObject
         this.height = height;
 
         this.image = image;
-        this.backgroundPercent = backgroundPercent;
         this.colliderPercent = colliderPercent;
 
         this.layer = "";
@@ -122,7 +248,7 @@ class GameObject
 
     draw()
     {
-        this.drawImage(this.left+(this.width*(1-this.backgroundPercent)/2), this.top+(this.height*(1-this.backgroundPercent)/2), this.width*this.backgroundPercent,this.height*this.backgroundPercent);
+        this.drawImage(this.left, this.top, this.width, this.height);
     }
 
     isColliding(objectX,objectY)
@@ -140,8 +266,6 @@ class GameObject
             width: objectY.width*objectY.colliderPercent,
             height: objectY.height*objectY.colliderPercent
         }
-
-        // console.log(colliderX);
 
         return (Math.abs(colliderX.xMid-colliderY.xMid)<=(colliderX.width+colliderY.width)/2
              && Math.abs(colliderX.yMid-colliderY.yMid)<=(colliderX.height+colliderY.height)/2);
@@ -174,13 +298,117 @@ class GameObject
     }
 
 }
-class Player extends GameObject
+
+class AnimationPlayer
 {
-    constructor(top,left,width,height,backgroundPercent,colliderPercent,speed,image=null)
+    constructor(setProperty)
     {
-        super(top,left,width,height,image,backgroundPercent,colliderPercent);
+        this.setProperty = setProperty;
+        this.currentAnimation;
+        this.animationTimer;
+        this.currentKeyframe = 0;
+        this.lastKeyframe = 0;
+        this.direction = 1;
+    }
+
+    play(animation,reversed=false)
+    {
+        if(this.currentAnimation) this.animationTimer.remove();
+
+        this.currentAnimation = animation;
+
+        this.direction = 1;
+        if(reversed)
+        {
+            this.lastKeyframe = this.currentKeyframe = animation.keyframes.length-1;
+            this.direction = -1;
+        }
+
+        let t = (this.getKeyframe(this.currentKeyframe).time - this.getKeyframe(this.lastKeyframe).time)/100*this.currentAnimation.duration;
+        this.animationTimer = new Timer("timeout",t,this.playKeyframe);
+
+    }
+
+    playKeyframe = () =>
+    {
+        let properties = this.getKeyframe(this.currentKeyframe).properties;
+        for (const property in properties) {
+            if (Object.hasOwnProperty.call(properties, property)) {
+                const value = properties[property];
+                this.setProperty(property,value);
+
+            }
+        }
+
+        if((this.direction===1 && this.currentKeyframe + 1 !== this.currentAnimation.keyframes.length) || (this.direction===-1 && this.currentKeyframe - 1 !== -1))
+        {
+            this.lastKeyframe = this.currentKeyframe += this.direction;
+            let t = (this.getKeyframe(this.currentKeyframe).time - this.getKeyframe(this.lastKeyframe).time)/100*this.currentAnimation.duration;
+            console.log(t);
+            this.animationTimer = new Timer("timeout",t,this.playKeyframe);    
+        }
+        else
+        {
+            this.currentKeyframe = 0;
+            this.lastKeyframe = 0;
+        }
+    }
+
+    getKeyframe(keyframe)
+    {
+        return this.currentAnimation.keyframes[keyframe];
+    }
+}
+class AnimatedSprite extends GameObject
+{
+    constructor(frameCount,args)
+    {
+        super(args);
+        this.frameCount = frameCount;
+        this.frame = 1;
+
+        this.scale = {
+            x: 1,
+            y: 1
+        }
+    }
+
+    drawImage(left,top)
+    {
+        if(this.image)
+        {
+            let img = new Image(); img.src = this.image;
+            let frameOffset = Math.abs(this.width) * (this.frame - 1);
+
+            ctx.scale(this.scale.x,this.scale.y);
+
+            let newLeft = this.scale.x * left - this.width * Math.abs(1-this.scale.x)/2;
+
+            ctx.drawImage(img,frameOffset,0,Math.abs(this.width),this.height,newLeft,top,this.width,this.height);
+            
+            if(this.scale!=={x:1,y:1}) ctx.scale(1/this.scale.x,1/this.scale.y);
+        }
+    }
+
+    setProperty = (property,value) =>
+    {
+        if(this[property])
+        {
+            this[property] = value;
+        }
+    }
+
+}
+class Player extends AnimatedSprite
+{
+    constructor(args)
+    {
+        super(5,args);
         this.speed = speed;
         this.layer = "player";
+        this.animationPlayer = new AnimationPlayer(this.setProperty);
+
+        console.log(this.speed);
     }
 
     move(direction)
@@ -195,32 +423,10 @@ class Player extends GameObject
     {
         if(canShoot && health > 0)
         {
-            let bullet = new Bullet(this.top,this.left+this.width/2-15,30,30,"./assets/img/b.png",-10,["enemy"]);
-            // let bulletHTML = `<div class="bullet flex-center" moving="false" vector=""><div class="bullet-background"></div><div class="bullet-collider collider"></div></div>`;
-            // let bullet = new Bullet(addElement(bulletHTML),"bullet",-10,"enemy");
+            let bullet = new Bullet({top: this.top,left: this.left+this.width/2-playerBulletTemplate.width/2,...playerBulletTemplate});
+            canShoot = false;
 
-            // bullet.setPosition(parseInt(getComputedStyle(player).top.slice(0,-2)) + "px",parseInt(getComputedStyle(player).left.slice(0,-2)) + parseInt(getComputedStyle(player).width.slice(0,-2))/2 - parseInt(getComputedStyle(bullet.element).width.slice(0,-2))/2 + "px");
-        
-            // setTimeout(() => {
-            //     bullet.element.setAttribute("moving","true");
-            // }, 100);
-
-            // canShoot = false;
-
-            // new Timer("timeout",500,()=>{
-            //     canShoot = true;
-            // });
-            // let timerFunction = () => {
-
-                
-            //     //console.log("can shoot now");
-            //     removeTimer(timerId,"timeout");
-            // }
-            // let timerId = setTimeout(() => {
-            //     timerFunction();
-            // }, 500);
-            // addTimer(timerId,"timeout",500,timerFunction);
-            // playSound(shootSound);
+            new Timer("timeout",500,()=>{canShoot = true});
         }
     }
 
@@ -234,7 +440,6 @@ class Player extends GameObject
             
             if(health<=0)
             {
-                // player.setAttribute("destroyed","true");
                 player.image = "";
                 // playSound(explodeSound);
                 setTimeout(() => {
@@ -245,26 +450,13 @@ class Player extends GameObject
             else
             {
                 // playSound(damageSound);
-                player.image = "./assets/img/spaceship-damaged.png";
-                // player.setAttribute("damaged","true");
+                // player.image = "./assets/img/spaceship-damaged.png";
     
             }
     
-            // let timerId;
-            // let timerFunction = function()
-            // {
-                
-            //     removeTimer(timerId,"timeout");
-            // }
-            // timerId = setTimeout(() => {
-            //     timerFunction();
-            // }, 5000);
-    
-            // addTimer(timerId,"timeout",5000,timerFunction);
-    
             new Timer("timeout",5000,()=>{
                 canTakeDamage = true;
-                player.image = "./assets/img/spaceship.png";
+                // player.image = "./assets/img/spaceship.png";
             });
         }
     }
@@ -291,8 +483,6 @@ class BackgroundImage
 
         ctx.drawImage(bgImage,this.left,this.layers[0],canvasWidth,this.height);
         ctx.drawImage(bgImage,this.left,this.layers[1],canvasWidth,this.height);
-        // ctx.fillStyle = backgroundPattern;
-        // ctx.fillRect(this.left,this.top,canvasWidth,canvasHeight);
     }
     moveBackground()
     {
@@ -367,7 +557,7 @@ class BackgroundImage
 //     destroy()
 //     {
 //         this.element.setAttribute("destroyed","true");
-        playSound(explodeSound);
+        // playSound(explodeSound);
 
 //         this.timer.remove();
 
@@ -395,18 +585,18 @@ class BackgroundImage
         
 //     }
 // }
-class Enemy extends GameObject
+class Enemy extends AnimatedSprite
 {
-    constructor(top=0,left=0,width,height,backgroundPercent,colliderPercent,image=null,speed)
+    constructor(args)
     {
-        super(top,left,width,height,image,backgroundPercent,colliderPercent);
+        super(1,args);
 
         this.direction = Math.sign(Math.random()-0.5) || 1;
 
         this.top = Math.random()*canvasHeight/3;
-        this.left = this.direction===1 ? -width : canvasWidth + width;
+        this.left = this.direction===1 ? -args.width : canvasWidth + args.width;
 
-        this.speed = speed;
+        this.speed = args.speed;
         this.layer = "enemy";
 
         this.shootInterval = 1200 + Math.sign(Math.random()-0.5) * Math.random()*200;
@@ -429,8 +619,8 @@ class Enemy extends GameObject
 
     shoot = () =>
     {
-        console.log("enemy shoot");
-        let bullet = new Bullet(this.top+99,this.left+this.width/2-15,30,30,"./assets/img/b.png",10,["player"]);
+        // console.log("enemy shoot");
+        let bullet = new Bullet({top: this.top+this.height,left: this.left+this.width/2-15,...enemyBulletTemplate});
         // playSound(enemyShootSound);
     }
 
@@ -441,12 +631,12 @@ class Enemy extends GameObject
 }
 class Bullet extends GameObject
 {
-    constructor(top,left,width,height,image,velocity,collisionMask)
+    constructor(args)
     {
-        super(top,left,width,height,image);
-        this.velocity = velocity;
+        super(args);
+        this.velocity = args.velocity;
+        this.collisionMask = args.collisionMask;
         this.layer = "bullet";
-        this.collisionMask = collisionMask;
     }
 
     behaviour()
@@ -473,25 +663,6 @@ class Bullet extends GameObject
     }
 
 }
-// class Bullet
-// {
-//     constructor(top,left,width,height,image)
-//     {
-//         this.element = element;
-//         this.vector = vector;
-
-//         gameWindow.appendChild(element);
-//         element.setAttribute("vector",vector);
-//         element.setAttribute("collision",colliisionClass);
-//         colliders.push({element: element, type: className});
-//     }
-
-//     setPosition(top,left)
-//     {
-//         this.element.style.top = top;
-//         this.element.style.left = left;
-//     }
-// }
 class Timer
 {
     constructor(timerType,time,func)
@@ -537,7 +708,7 @@ class Timer
         this.paused = true;
         // this.remainder = this.time - (Date.now()-this.last);
         this.remainder = (this.remainder===0 ? this.time : this.remainder) - ((Date.now() - this.last) % this.time)
-        console.log(this.id +": " + this.remainder);
+        // console.log(this.id +": " + this.remainder);
     }
 
     resume = () => {
@@ -564,32 +735,6 @@ function setAllNewTimers(enabled)
         });
     }
 }
-
-document.body.onkeydown = function(e)
-{
-    if(controls[e.which]) controls[e.which].pressed = true;
-    //console.log(e.which);
-
-    if(active)
-    {
-        if(e.which===32) player.shoot();
-        if(e.which===27) setGameWindow(1);
-        // if(e.which===69) playSound("./assets/audio/shoot-sound.mp3");
-    }
-    else
-    {
-        if(e.which===27) setGameWindow(4);
-    }
-}
-document.body.onkeyup = function(e)
-{
-    if(controls[e.which]) controls[e.which].pressed = false;
-
-    // if(e.which===65 || e.which===68) player.setAttribute("steer","none");
-}
-rightButton.onpointerdown = () => {controls[68].pressed=true;}; rightButton.onpointerup = rightButton.onpointerleave = () => {controls[68].pressed=false;};
-leftButton.onpointerdown = () => {controls[65].pressed=true;}; leftButton.onpointerup = leftButton.onpointerleave = () => {controls[65].pressed=false;};
-shootButton.onpointerdown = () => {player.shoot()};
 
 //functions
 function move(direction)
@@ -1019,9 +1164,11 @@ function start()
 
     function spawnEnemy()
     {
-        let enemy = new Enemy(0,0,100,100,1.5,1,"./assets/img/enemy.png",5);
+        let enemy = new Enemy(enemyTemplate);
     }
     let spawnTimer = new Timer("interval",1000,spawnEnemy);
+
+    started = true;
 
 }
 function setFPS(fps)
@@ -1052,19 +1199,21 @@ setPlatformControls();
 // game loop();
 
 
-player = new Player(canvasWidth/2-50,canvasHeight*4/5-50,100,100,1,0.5,10,"./assets/img/spaceship.png");
+player = new Player(playerTemplate);
 gameBackground = new BackgroundImage(0,0,800,2000,10,"./assets/img/bg.png");
 
 
 
 function loop()
 {
-    gameBackground.drawBackground();
+    if(!started)
+    {
+        gameBackground.drawBackground();
+    }
     if(active)
     {
-
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-    
+        
         gameBackground.drawBackground();
         gameBackground.moveBackground();
         
@@ -1079,14 +1228,21 @@ function loop()
         for (const key in controls) {
             if (Object.hasOwnProperty.call(controls, key)) {
                 const control = controls[key];
-                if(control.pressed) control.func();
-                
+                if(control.pressed)
+                {
+                    control.onHold && control.onHold();
+
+                    if(control.fired)
+                    {
+                        control.onDown();
+                        control.fired = false;
+                    }
+                }
             }
         }
     }
 
     requestAnimationFrame(loop);
 }
-
 loop();
-
+  
