@@ -78,7 +78,6 @@ document.body.onkeydown = function(e)
     if(controls[e.which])
     {
         controls[e.which].pressed = true;
-        // controls[e.which].fired = true;
     }
 
     if(active)
@@ -104,8 +103,10 @@ document.body.onkeyup = function(e)
     }
 }
 
-rightButton.onpointerdown = () => {controls[68].pressed=true;}; rightButton.onpointerup = rightButton.onpointerleave = () => {controls[68].pressed=false;};
-leftButton.onpointerdown = () => {controls[65].pressed=true;}; leftButton.onpointerup = leftButton.onpointerleave = () => {controls[65].pressed=false;};
+rightButton.onpointerdown = () => {controls[68].pressed=true;};
+rightButton.onpointerup = rightButton.onpointerleave = () => {controls[68].pressed = false; controls[68].fired = true; if(controls[68].onUp) controls[68].onUp();};
+leftButton.onpointerdown = () => {controls[65].pressed=true;};
+leftButton.onpointerup = leftButton.onpointerleave = () => {controls[65].pressed = false; controls[65].fired = true; if(controls[65].onUp) controls[65].onUp();};
 shootButton.onpointerdown = () => {player.shoot()};
 
 
