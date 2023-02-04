@@ -37,7 +37,7 @@ let maxSpawnRate = 200;
 let spawnRate = initialSpawnRate;
 
 let newTimers = [];
-let gameObjects = [];
+let gameSprites = [];
 
 let shootSound = "./assets/audio/shoot-sound.mp3";
 let enemyShootSound = "./assets/audio/shoot-sound.mp3";
@@ -55,7 +55,7 @@ let controls = {
         fired: true,
         onHold: function(){player.move(-1);},
         onDown: function(){player.setProperty("scale",{x:-1,y:1});player.animationPlayer.play(steeringAnimation);},
-        onUp: function(){player.setProperty("scale",{x:1,y:1});player.animationPlayer.play(steeringAnimation,true);}
+        onUp: function(){new Timer("timeout",steeringAnimation.duration,()=>{player.setProperty("scale",{x:1,y:1});});player.animationPlayer.play(steeringAnimation,true);}
     }, //a
     68:
     {
@@ -157,6 +157,21 @@ let enemyBulletTemplate = {
     velocity: 10,
     collisionMask: ["player"]
 }
+let shieldTemplate = {
+    top: 0,
+    left: 0,
+    width: 100,
+    height: 100,
+    colliderPercent: 0,
+    image: "./assets/img/shield-spritesheet.png"
+}
+let explosionTemplate = {
+    width: 100,
+    height: 100,
+    colliderPercent: 0,
+    image: "./assets/img/explode-spritesheet.png"
+}
+
 let steeringAnimation = {
     name: "steering",
     keyframes: [
@@ -196,11 +211,211 @@ let steeringAnimation = {
             }
         }
     ],
+    duration: 150
+}
+let shieldAnimation = {
+    name: "shield",
+    keyframes: [
+        {
+            time: 10,
+            properties:
+            {
+                frame: 1
+            }
+        },
+        {
+            time: 0,
+            properties:
+            {
+                frame: 2
+            }
+        },
+        {
+            time: 20,
+            properties:
+            {
+                frame: 3
+            }
+        },
+        {
+            time: 30,
+            properties:
+            {
+                frame: 4
+            }
+        },
+        {
+            time: 40,
+            properties:
+            {
+                frame: 5
+            }
+        },
+        {
+            time: 50,
+            properties:
+            {
+                frame: 6
+            }
+        },
+        {
+            time: 60,
+            properties:
+            {
+                frame: 7
+            }
+        },
+        {
+            time: 70,
+            properties:
+            {
+                frame: 8
+            }
+        },
+        {
+            time: 80,
+            properties:
+            {
+                frame: 9
+            }
+        },
+        {
+            time: 100,
+            properties:
+            {
+                frame: 10
+            }
+        }
+    ],
+    duration: 200
+}
+let explosionAnimation = {
+    name: "explode",
+    keyframes: [
+        {
+            time: 0,
+            properties:
+            {
+                frame: 1
+            }
+        },
+        {
+            time: 16.6,
+            properties:
+            {
+                frame: 2
+            }
+        },
+        {
+            time: 25,
+            properties:
+            {
+                frame: 3
+            }
+        },
+        {
+            time: 33.3,
+            properties:
+            {
+                frame: 4
+            }
+        },
+        {
+            time: 41.6,
+            properties:
+            {
+                frame: 5
+            }
+        },
+        {
+            time: 50,
+            properties:
+            {
+                frame: 6
+            }
+        },
+        {
+            time: 58.3,
+            properties:
+            {
+                frame: 7
+            }
+        },
+        {
+            time: 66.6,
+            properties:
+            {
+                frame: 8
+            }
+        },
+        {
+            time: 75,
+            properties:
+            {
+                frame: 9
+            }
+        },
+        {
+            time: 83.3,
+            properties:
+            {
+                frame: 10
+            }
+        },
+        {
+            time: 91.6,
+            properties:
+            {
+                frame: 11
+            }
+        },
+        {
+            time: 100,
+            properties:
+            {
+                frame: 12
+            }
+        }
+    ],
     duration: 500
+}
+let damagedAnimation = {
+    name: "damage",
+    keyframes: [
+        {
+            time: 0,
+            properties:
+            {
+                translateX: 0 
+            }
+        },
+        {
+            time: 20,
+            properties:
+            {
+                translateX: 6
+            }
+        },
+        {
+            time: 80,
+            properties:
+            {
+                translateX: -6
+            }
+        },
+        {
+            time: 100,
+            properties:
+            {
+                translateX: 0 
+            }
+        }
+    ],
+    duration: 80
 }
 // GAME CLASSES
 
-class GameObject
+class GameSprite
 {
     constructor({top,left,width,height,colliderPercent=1,image=null,collisionMask=[]})
     {
@@ -216,8 +431,10 @@ class GameObject
         this.id = makeId(5);
 
         this.timers = [];
+        this.children = [];
+        this.parent = null;
 
-        gameObjects.push(this);
+        gameSprites.push(this);
     }
 
     getFromRect(attr)
@@ -249,7 +466,8 @@ class GameObject
 
     draw()
     {
-        this.drawImage(this.left, this.top, this.width, this.height);
+        if(this.parent) this.drawImage(this.parent.left + this.left,this.parent.top + this.top, this.width, this.height);
+        else this.drawImage(this.left, this.top, this.width, this.height);
     }
 
     isColliding(objectX,objectY)
@@ -275,8 +493,20 @@ class GameObject
 
     getCollisions()
     {
-        let collisions = gameObjects.filter((gameObject)=>gameObject!==this && this.collisionMask.includes(gameObject.layer)).filter((gameObject)=>this.isColliding(this,gameObject));
+        let collisions = gameSprites.filter((gameSprite)=>gameSprite!==this && this.collisionMask.includes(gameSprite.layer)).filter((gameSprite)=>this.isColliding(this,gameSprite));
         return collisions;
+    }
+
+    addChild(childGameSprite)
+    {
+        this.children.push(childGameSprite);
+        childGameSprite.parent = this;
+        return childGameSprite;
+    }
+
+    removeFromParent = () =>
+    {
+        this.parent.children = this.parent.children.filter((child)=> child.id!==this.id);
     }
 
     behaviour()
@@ -295,16 +525,18 @@ class GameObject
         this.timers.forEach(timer => {
             timer.remove();
         });
-        gameObjects = gameObjects.filter((gameObject)=>gameObject.id!==this.id);
+        this.children.forEach(child => {
+            child.delete();
+        });
+        gameSprites = gameSprites.filter((gameSprite)=>gameSprite.id!==this.id);
     }
 
 }
 
 class AnimationPlayer
 {
-    constructor(setProperty)
+    constructor()
     {
-        this.setProperty = setProperty;
         this.currentAnimation;
         this.animationTimer;
         this.currentKeyframe = 0;
@@ -312,18 +544,13 @@ class AnimationPlayer
         this.direction = 1;
     }
 
-    play(animation,reversed=false)
+    play(animation,reversed=false,iteration=0)
     {
         if(this.currentAnimation) this.animationTimer.remove();
 
-        this.currentAnimation = animation;
+        this.currentAnimation = reversed ? this.getReversedAnimation(animation) : animation;
 
-        this.direction = 1;
-        if(reversed)
-        {
-            this.lastKeyframe = this.currentKeyframe = animation.keyframes.length-1;
-            this.direction = -1;
-        }
+        this.iteration = iteration - 1;
 
         let t = (this.getKeyframe(this.currentKeyframe).time - this.getKeyframe(this.lastKeyframe).time)/100*this.currentAnimation.duration;
         this.animationTimer = new Timer("timeout",t,this.playKeyframe);
@@ -341,17 +568,22 @@ class AnimationPlayer
             }
         }
 
-        if((this.direction===1 && this.currentKeyframe + 1 !== this.currentAnimation.keyframes.length) || (this.direction===-1 && this.currentKeyframe - 1 !== -1))
+        if((this.direction===1 && this.currentKeyframe + 1 !== this.currentAnimation.keyframes.length))
         {
-            this.lastKeyframe = this.currentKeyframe += this.direction;
+            this.lastKeyframe = this.currentKeyframe;
+            this.currentKeyframe++;
             let t = (this.getKeyframe(this.currentKeyframe).time - this.getKeyframe(this.lastKeyframe).time)/100*this.currentAnimation.duration;
             console.log(t);
-            this.animationTimer = new Timer("timeout",t,this.playKeyframe);    
+            this.animationTimer = new Timer("timeout",t,this.playKeyframe);
         }
         else
         {
-            this.currentKeyframe = 0;
-            this.lastKeyframe = 0;
+            if(this.iteration > 0)
+            {
+                this.play(this.currentAnimation,this.reversed,this.iteration);
+            }
+
+            this.currentKeyframe = this.lastKeyframe = 0;
         }
     }
 
@@ -359,8 +591,24 @@ class AnimationPlayer
     {
         return this.currentAnimation.keyframes[keyframe];
     }
+
+    getReversedAnimation(animation)
+    {
+        let revesedAnimation  = {...animation, keyframes: []};
+        for (let i = animation.keyframes.length - 1; i >= 0; i--)
+        {
+            const keyframe = animation.keyframes[i];
+
+            revesedAnimation.keyframes.push({
+                time: 100 - keyframe.time,
+                properties: keyframe.properties
+            });
+            
+        }
+        return revesedAnimation;
+    }
 }
-class AnimatedSprite extends GameObject
+class AnimatedGameSprite extends GameSprite
 {
     constructor(frameCount,args)
     {
@@ -371,7 +619,13 @@ class AnimatedSprite extends GameObject
         this.scale = {
             x: 1,
             y: 1
-        }
+        };
+        this.opacity = 1;
+        this.translateX = 0;
+
+        this.animationPlayer = new AnimationPlayer();
+        this.animationPlayer.setProperty = this.setProperty;
+
     }
 
     drawImage(left,top)
@@ -382,34 +636,40 @@ class AnimatedSprite extends GameObject
             let frameOffset = Math.abs(this.width) * (this.frame - 1);
 
             ctx.scale(this.scale.x,this.scale.y);
+            if(this.opacity!==1) ctx.globalAlpha = this.opacity;
+            if(this.translateX!==0) ctx.translate(this.translateX, 0);
 
             let newLeft = this.scale.x * left - this.width * Math.abs(1-this.scale.x)/2;
 
             ctx.drawImage(img,frameOffset,0,Math.abs(this.width),this.height,newLeft,top,this.width,this.height);
             
+            if(this.translateX!==0) ctx.translate(-this.translateX, 0);
             if(this.scale!=={x:1,y:1}) ctx.scale(1/this.scale.x,1/this.scale.y);
+            if(this.opacity!==1) ctx.globalAlpha = 1;
         }
     }
 
     setProperty = (property,value) =>
     {
-        if(this[property])
+        if(this[property]!==null)
         {
             this[property] = value;
         }
     }
 
 }
-class Player extends AnimatedSprite
+class Player extends AnimatedGameSprite
 {
     constructor(args)
     {
         super(5,args);
         this.speed = speed;
         this.layer = "player";
-        this.animationPlayer = new AnimationPlayer(this.setProperty);
 
-        console.log(this.speed);
+        this.shield = this.addChild(
+            new AnimatedGameSprite(10,shieldTemplate)
+        );
+        this.shield.setProperty("opacity",0.4);
     }
 
     move(direction)
@@ -426,9 +686,16 @@ class Player extends AnimatedSprite
         {
             let bullet = new Bullet({top: this.top,left: this.left+this.width/2-playerBulletTemplate.width/2,...playerBulletTemplate});
             canShoot = false;
+            playSound(shootSound);
 
             new Timer("timeout",500,()=>{canShoot = true});
         }
+
+    }
+
+    setShield(enabled)
+    {
+        this.shield.animationPlayer.play(shieldAnimation,!enabled);
     }
 
     onHit()
@@ -436,13 +703,16 @@ class Player extends AnimatedSprite
         if(canTakeDamage)
         {
             canTakeDamage = false;
+            this.animationPlayer.play(damagedAnimation,true,4);
+            this.setShield(true);
             health--;
             updateHealth();
             
             if(health<=0)
             {
-                player.image = "";
-                // playSound(explodeSound);
+                new Explosion({top: this.top, left: this.left, ...explosionTemplate});
+                this.delete();
+                playSound(explodeSound);
                 setTimeout(() => {
                     setGameWindow(3);
                 }, 3000);
@@ -450,14 +720,14 @@ class Player extends AnimatedSprite
             }
             else
             {
-                // playSound(damageSound);
+                playSound(damageSound);
                 // player.image = "./assets/img/spaceship-damaged.png";
     
             }
     
             new Timer("timeout",5000,()=>{
                 canTakeDamage = true;
-                // player.image = "./assets/img/spaceship.png";
+                this.setShield(false);
             });
         }
     }
@@ -495,98 +765,7 @@ class BackgroundImage
         }
     }
 }
-// class Enemy(0,0,100,100,)/ {
-//     constructor(element,id,dir)
-//     {
-//         this.element = element;
-//         this.id = id;
-
-//         this.element.setAttribute("dir",dir);
-//         this.element.setAttribute("id",id);
-//         gameWindow.appendChild(this.element);
-
-//         this.shootInterval = 1200 + Math.sign(Math.random()-0.5) * Math.random()*200;
-
-//         this.startCycle();
-        
-//     }
-
-//     enemyCycleFunction = () =>
-//     {
-//         // console.log(this);
-        
-//         if(document.body.contains(this.element))
-//         {
-//             this.shoot();
-//         }
-//         else
-//         {
-//             // /console.log("outside function: " + this.enemyCycle);
-//             // removeTimer(this.enemyCycle,"interval");
-//             this.timer.remove();
-//         }
-//     }
-
-//     startCycle()
-//     {
-//         this.timer = new Timer("interval",this.shootInterval,this.enemyCycleFunction);
-//         //console.log("started cycle");
-//         // this.enemyCycle = setInterval(() => {
-//         //     this.enemyCycleFunction();
-//         // }, this.shootInterval);
-//         // addTimer(this.enemyCycle,"interval",this.shootInterval,this.enemyCycleFunction,"shootCycle");
-
-//     }
-
-//     shoot = () =>
-//     {
-//         if(health>0 && this.element.getBoundingClientRect().left < gameWindow.getBoundingClientRect().right && this.element.getBoundingClientRect().right > gameWindow.getBoundingClientRect().left)
-//         {
-//             let bulletHTML = `<div class="enemy-bullet bullet flex-center" moving="true"><div class="bullet-background"></div><div class="bullet-collider collider"></div></div>`;
-//             let bullet = new Bullet(addElement(bulletHTML),"enemy-bullet",5,"");
-    
-//             bullet.setPosition(this.element.getBoundingClientRect().top + "px", parseInt(getComputedStyle(this.element).left.slice(0,-2)) + parseInt(getComputedStyle(this.element).width.slice(0,-2))/2 - parseInt(getComputedStyle(bullet.element).width.slice(0,-2))/2 + "px");
-
-//             let windowMid = gameWindow.getBoundingClientRect().left+gameWindow.getBoundingClientRect().width;
-//             let enemyMid = this.element.getBoundingClientRect().left+this.element.getBoundingClientRect().width;
-//             let midPointRatio = 1-Math.abs(windowMid-enemyMid)/windowMid;
-            // playSound(enemyShootSound,(0.5 * midPointRatio));
-//             // console.log("shoot");
-//         }
-//     }
-
-//     destroy()
-//     {
-//         this.element.setAttribute("destroyed","true");
-        // playSound(explodeSound);
-
-//         this.timer.remove();
-
-//         new Timer("timeout",1000,() => {
-//             this.element.remove();
-//             enemies = enemies.filter((enemyInList)=>enemyInList!==this);
-//             // console.log("destroyed");
-//         });
-
-//         // removeTimer(this.enemyCycle,"interval");
-
-//         // let timerId;
-//         // let timerFunction = () => {
-
-//         //     this.element.remove();
-//         //     enemies = enemies.filter((enemyInList)=>enemyInList!==this);
-//         //     console.log("destroyed");
-//         //     removeTimer(timerId,"timeout");
-//         // }
-//         // timerId = setTimeout(() => {
-//         //     timerFunction();
-//         // }, 1000);
-
-//         // addTimer(timerId,"timeout",1000,timerFunction);
-        
-//     }
-// }
-class Enemy extends AnimatedSprite
+class Enemy extends AnimatedGameSprite
 {
     constructor(args)
     {
@@ -620,17 +799,18 @@ class Enemy extends AnimatedSprite
 
     shoot = () =>
     {
-        // console.log("enemy shoot");
         let bullet = new Bullet({top: this.top+this.height,left: this.left+this.width/2-15,...enemyBulletTemplate});
-        // playSound(enemyShootSound);
+        playSound(enemyShootSound);
     }
 
     onHit()
     {
-        this.delete();
+        new Explosion({top: this.top-20, left: this.left + this.direction*20, ...explosionTemplate});
+        new Timer("timeout",50,()=>{this.delete()});
+        playSound(explodeSound);
     }
 }
-class Bullet extends GameObject
+class Bullet extends GameSprite
 {
     constructor(args)
     {
@@ -652,6 +832,9 @@ class Bullet extends GameObject
                 const collision = collisions[i];
                 collision.onHit && collision.onHit();
                 this.delete();
+
+                score++;
+                updateScore();
                 
             }
         }
@@ -663,6 +846,16 @@ class Bullet extends GameObject
         }
     }
 
+}
+class Explosion extends AnimatedGameSprite
+{
+    constructor(args)
+    {
+        super(12,args);
+
+        this.animationPlayer.play(explosionAnimation);
+        new Timer("timeout",explosionAnimation.duration,()=>{this.delete()});
+    }
 }
 class Timer
 {
@@ -738,63 +931,31 @@ function setAllNewTimers(enabled)
 }
 
 //functions
-function move(direction)
-{
- 
-    if(direction===1 && player.getBoundingClientRect().right <= gameWindow.getBoundingClientRect().right)
-        player.style.left = ++playerX * playerRate + "px";
-    
-    else if(direction===-1 && player.getBoundingClientRect().left > gameWindow.getBoundingClientRect().left)
-        player.style.left = --playerX * playerRate + "px";
-    
-}
-function takeDamage()
-{
-    canTakeDamage = false;
-    health--;
-    updateHealth();
-    
-    if(health<=0)
-    {
-        player.setAttribute("destroyed","true");
-        // playSound(explodeSound);
-        setTimeout(() => {
-            setGameWindow(3);
-        }, 3000);
-        return;
-    }
-    else
-    {
-        // playSound(damageSound);
-        player.setAttribute("damaged","true");
-
-    }
-
-    // let timerId;
-    // let timerFunction = function()
-    // {
-        
-    //     removeTimer(timerId,"timeout");
-    // }
-    // timerId = setTimeout(() => {
-    //     timerFunction();
-    // }, 5000);
-
-    // addTimer(timerId,"timeout",5000,timerFunction);
-
-    new Timer("timeout",5000,()=>{
-        player.setAttribute("damaged","false");
-        canTakeDamage = true;
-    })
-}
-
 
 function playSound(sound,volume=0.5)
 {
-    let element = addElement(`<audio autoplay src="${sound}"></audio>`);
-    element.volume = volume;
-    element.onended = function(){element.remove()};
-    audioContainer.appendChild(element);
+    let availableAudios = [...(audioContainer.querySelectorAll(`audio[src="${sound}"]`))].filter((audio)=>audio.paused);
+    if(availableAudios.length > 0)
+    {
+        availableAudios[0].play();
+        let timerId = availableAudios[0].getAttribute("timer");
+        // console.log("removed: " + newTimers.filter((timer)=>timer.id===timerId)[0].id);
+        if(timerId) newTimers = newTimers.filter((timer)=>timer.id!==timerId);
+    }
+    else
+    {
+        let element = addElement(`<audio autoplay src="${sound}"></audio>`);
+        element.volume = volume;
+        element.onended = function()
+        {
+            let audioTimer = new Timer("timeout",5000,()=>{
+                if(!element.paused) element.remove();
+            });
+            element.setAttribute("timer",audioTimer.id);
+        };
+        audioContainer.appendChild(element);
+    }
+
 }
 function addElement(html)
 {
@@ -900,8 +1061,7 @@ function moveBullets()
             // console.log(collidingEnemy);
             bullet.remove();
 
-            score++;
-            updateScore();
+            
         }
         let sign = Math.sign(parseInt(bullet.getAttribute("vector")));
         if((sign < 0 && bullet.getBoundingClientRect().bottom < gameWindow.getBoundingClientRect().top)
@@ -914,15 +1074,13 @@ function moveBullets()
 }
 function resetGame()
 {
-    gameObjects.filter((gameObject)=>gameObject!==player).forEach(gameObject => {
-        gameObject.delete();
+    gameSprites.filter((gameSprite)=>gameSprite!==player).forEach(gameSprite => {
+        gameSprite.delete();
     });
-    gameObjects = [player];
+    gameSprites = [];
 
-    // timers.forEach(timer => {
-    //     removeTimer(timer.timerId);
-    // });
-    // timers = [];
+    player = new Player(playerTemplate);
+    
     newTimers.forEach(timer => {
         timer.remove();
     });
@@ -933,14 +1091,9 @@ function resetGame()
 
     spawnRate = initialSpawnRate;
 
-    // gameBackground.style.animationDuration = "10s";
-
-
     active = true;
     canTakeDamage = true;
     canShoot = true;
-    // player.setAttribute("damaged","false");
-    // player.setAttribute("destroyed","false");
     
     start();
 }
@@ -973,7 +1126,7 @@ function setGameWindow(newWindowIndex)
         document.body.setAttribute("active", "false");
         // setAllTimers(false);
         setAllNewTimers(false);
-        // playSound(uiSound);
+        playSound(uiSound);
     }
     else if(newWindow==="gamePaused"||newWindow==="gameOptions")
     {
@@ -987,7 +1140,7 @@ function setGameWindow(newWindowIndex)
                 document.body.setAttribute("active", "false");
                 // setAllTimers(false);
                 setAllNewTimers(false);
-                // playSound(uiSound);
+                playSound(uiSound);
             }
         }
     }
@@ -998,11 +1151,11 @@ function setGameWindow(newWindowIndex)
         document.body.setAttribute("active", "false");
         // setAllTimers(false);
         setAllNewTimers(false);
-        // playSound(uiSound);
+        playSound(uiSound);
     }
     else if(newWindow==="none")
     {
-        // playSound(uiSound);
+        playSound(uiSound);
         if(currentWindow==="gameOver")
         {
             gameOverlay.setAttribute("window","none");
@@ -1069,107 +1222,41 @@ function makeId(length)
     return id;
 
 }
-
-// function start()
-// {
-    // initHealth();
-
-    // player.style.left = playerX * playerRate + "px";
-    // player.style.top = playerY * playerRate + "px";
-
-    // gameOverlay.addEventListener("transitionend", function(){if(gameOverlay.getAttribute("window")==="none")document.activeElement.blur();}); 
-
-    // let startDelay = 2000;
-    // if(document.body.getAttribute("started")==="false")
-    // {
-    //     document.body.setAttribute("started","true");
-    //     startDelay = 5000;
-    // }
-
-    // let delayTimer;
-    // let delayTimerFunction = () => {
-
-        // let timerObject;
-        // let spawnTimerFunction = () => {
-        //     spawnEnemy();
-        //     if(timerObject && 60.0/spawnRate*1000!==timerObject.maxTime)
-        //     {
-        //         clearInterval(timerObject.timerId);
-        //         timerObject.maxTime = 60.0/spawnRate*1000;
-        //         timerObject.timerId = setInterval(() => {
-        //             timerObject.func();
-        //         },timerObject.maxTime);
-        //     }
-        // }
-        // let spawnTimer = setInterval(function()
-        // {
-        //     spawnTimerFunction();
-        // }, 60.0/spawnRate*1000);
-    
-        // timerObject = addTimer(spawnTimer,"interval",60.0/spawnRate*1000,spawnTimerFunction);
-        // let spawnTimer;
-        // spawnTimer = new Timer("interval",60.0/spawnRate*1000,()=>{
-        //     spawnEnemy();
-        //     spawnTimer.setTime(60.0/spawnRate*1000);
-        //     console.log(spawnTimer.time);
-            // if(rateChangeTimer && 60.0/spawnRate*1000!==rateChangeTimer.time)
-            // {
-            //     clearInterval(timerObject.timerId);
-            //     timerObject.maxTime = 60.0/spawnRate*1000;
-            //     timerObject.timerId = setInterval(() => {
-            //         timerObject.func();
-            //     },timerObject.maxTime);
-            // }
-        // });
-
-        // let updateRateFunction = () => {
-            
-        // }
-        // let updateRate = setInterval(() => {
-        //     updateRateFunction();
-        // }, 10*1000);
-    
-        // addTimer(updateRate,"interval",10*1000,updateRateFunction);
-        // removeTimer(delayTimer,"timeout");   
-        // console.log("started");
-
-    //     new Timer("interval",10*1000,()=>{
-    //         if(spawnRate*1.1<maxSpawnRate)
-    //         {
-    //             spawnRate*= 1.1;
-    //             console.log("spawnrate: "+spawnRate);
-    //         }
-    //         if(parseFloat(getComputedStyle(gameBackground).animationDuration.slice(0,-1)*0.9>5))
-    //         {
-    //             gameBackground.style.animationDuration = parseFloat(getComputedStyle(gameBackground).animationDuration.slice(0,-1))*0.9 + "s";
-    //         }
-    //     });
-    // }
-
-    // delayTimer = setTimeout(() => {
-    //     delayTimerFunction();
-    // }, startDelay);
-
-    // addTimer(delayTimer,"timeout",startDelay,delayTimerFunction);
-    // console.log("starting in 5 seconds");
-
-    // new Timer("timeout",startDelay,delayTimerFunction);
-
-
-// };
 function start()
 {
+    started = true;
+
     player.top = canvasHeight*4/5-50; player.left = canvasWidth/2-50;
 
     initHealth();
 
-    function spawnEnemy()
-    {
-        let enemy = new Enemy(enemyTemplate);
-    }
-    let spawnTimer = new Timer("interval",1000,spawnEnemy);
+    gameOverlay.addEventListener("transitionend", function(){if(gameOverlay.getAttribute("window")==="none")document.activeElement.blur();});
 
-    started = true;
+    let startDelay = 2000;
+    if(document.body.getAttribute("started")==="false")
+    {
+        document.body.setAttribute("started","true");
+        startDelay = 5000;
+    }
+
+    let delayTimerFunction = function()
+    {
+        let spawnTimer = new Timer("interval",60/spawnRate*1000,()=>{
+            let enemy = new Enemy(enemyTemplate);
+        });
+    
+        let updateSpawnRateTimer = new Timer("interval",10*1000,()=>{
+            if(spawnRate*1.1<maxSpawnRate)
+            {
+                spawnRate*= 1.1;
+                spawnTimer.setTime(60/spawnRate*1000);
+                console.log("updated spawn rate");
+            }
+        });
+    }
+
+    new Timer("timeout",startDelay,delayTimerFunction);
+
 
 }
 function setFPS(fps)
@@ -1218,8 +1305,8 @@ function loop()
         gameBackground.drawBackground();
         gameBackground.moveBackground();
         
-        gameObjects.forEach(gameObject => {
-            gameObject.update();
+        gameSprites.forEach(gameSprite => {
+            gameSprite.update();
         });
     
         newTimers.forEach(timer => {
