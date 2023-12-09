@@ -3655,10 +3655,12 @@ class Timer
     constructor(timerType,time,func)
     {
         this.timerType = timerType;
-        this.time = time;
         this.func = func;
-        this.last = Date.now();
-        this.remainder = 0;
+        this.time = time;
+        this.remaining = time;
+        this.delta = 20;
+        // this.last = Date.now();
+        // this.remainder = 0;
         this.paused = false;
         this.id = makeId(5);
 
@@ -3667,36 +3669,53 @@ class Timer
         return this;
     }
 
-    setTime = (newTime) => {
-        this.time = newTime;
-    }
+    // setTime = (newTime) => {
+    //     this.time = newTime;
+    // }
 
     execute = () => {
-        let t = this.remainder===0 ? this.time : this.remainder;
-        if(Date.now() >= this.last + t && !this.paused)
+        if(!this.paused)
         {
-            this.func();
-            this.last = Date.now();
+            this.remaining -= this.delta;
 
-            if(this.timerType==="timeout")
+            if(this.remaining <= 0)
             {
-                this.remove();
-                return;
-            }
-            if(this.remainder!==0)
-            {
-                this.remainder = 0;
+                this.func();
+
+                if(this.timerType==="timeout")
+                {
+                    this.remove();
+                    return;
+                }
+
+                this.remaining = this.time;
             }
         }
+        // let t = this.remainder===0 ? this.time : this.remainder;
+        // if(Date.now() >= this.last + t && !this.paused)
+        // {
+        //     this.func();
+        //     this.last = Date.now();
+
+        //     if(this.timerType==="timeout")
+        //     {
+        //         this.remove();
+        //         return;
+        //     }
+        //     if(this.remainder!==0)
+        //     {
+        //         this.remainder = 0;
+        //     }
+        // }
     }
 
     pause = () => {
         this.paused = true;
-        this.remainder = (this.remainder===0 ? this.time : this.remainder) - ((Date.now() - this.last) % this.time)
+        // this.remainder = (this.remainder===0 ? this.time : this.remainder) - ((Date.now() - this.last) % this.time)
     }
 
     resume = () => {
-        this.last = Date.now();
+        // this.last = Date.now();
         this.paused = false;
     }
 
