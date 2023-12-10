@@ -66,6 +66,11 @@ let healthSound = "./assets/audio/health.mp3";
 
 let uiSound = "./assets/audio/ui.wav";
 
+let assetsImgPath = "./assets/img/pc/"
+
+setPlatformControls();
+
+
 let masterVolume = 0.3;
 
 let enemyWaveTime = 0.5;
@@ -1267,7 +1272,7 @@ let playerTemplate = {
         }
     ],
     speed: speed,
-    image: "./assets/img/spaceship-sprites.png",
+    image: ""+assetsImgPath+"spaceship-sprites.png",
     filters: ["drop-shadow(0 0 10px gold)"],
     vf: 5,
     hf: 1,
@@ -1290,7 +1295,7 @@ let enemyPurpleTemplate = {
         }
     ],
     collisionMask: ["player"],
-    image: "./assets/img/enemy.png",
+    image: ""+assetsImgPath+"enemy.png",
     speed: 5,
     vf: 1,
     hf: 1,
@@ -1311,7 +1316,7 @@ let enemyRedTemplate = {
             h: 90,
         }
     ],
-    image: "./assets/img/enemy-red.png",
+    image: ""+assetsImgPath+"enemy-red.png",
     speed: 5,
     vf: 1,
     hf: 1,
@@ -1333,7 +1338,7 @@ let enemyCyanTemplate = {
             h: 90,
         }
     ],
-    image: "./assets/img/enemy-cyan.png",
+    image: ""+assetsImgPath+"enemy-cyan.png",
     speed: 5,
     vf: 1,
     hf: 1,
@@ -1354,7 +1359,7 @@ let enemyGreenTemplate = {
             h: 90,
         }
     ],
-    image: "./assets/img/enemy-green-sheet.png",
+    image: ""+assetsImgPath+"enemy-green-sheet.png",
     speed: 5,
     vf: 8,
     hf: 1,
@@ -1377,7 +1382,7 @@ let enemyBlueTempltate = {
         }
     ],
     collisionMask: ["player"],
-    image: "./assets/img/enemy-blue.png",
+    image: ""+assetsImgPath+"enemy-blue.png",
     speed: 5,
     vf: 1,
     hf: 1,
@@ -1390,7 +1395,7 @@ let enemyBlueTempltate = {
 let playerBulletTemplate = {
     width: 30,
     height: 30,
-    image: "./assets/img/bullet.png",
+    image: ""+assetsImgPath+"bullet.png",
     velocity: -10,
     colliders:
     [
@@ -1409,7 +1414,7 @@ let playerBulletTemplate = {
     customOnHit: function(){
         if(!this.parent)
         {
-            let bulletImpact = new AnimatedGameSprite({top: this.top-this.height/2-25, left: this.left-this.width/2-25, width:100,height:100,image:"./assets/img/bullet-impact.png",vf:4,hf:1});
+            let bulletImpact = new AnimatedGameSprite({top: this.top-this.height/2-25, left: this.left-this.width/2-25, width:100,height:100,image:""+assetsImgPath+"bullet-impact.png",vf:4,hf:1});
             let impactAnimation = createSpriteAnimation(150,[0,1,2,3,3],"impact");
             bulletImpact.animationPlayer.playSprite(impactAnimation);
             new Timer("timeout",impactAnimation.duration,()=>{
@@ -1422,7 +1427,7 @@ let playerBulletTemplate = {
 
 let enemyBulletTemplate = {
     ...playerBulletTemplate,
-    image: "./assets/img/enemy-bullet.png",
+    image: ""+assetsImgPath+"enemy-bullet.png",
     velocity: 10,
     colliders:
     [
@@ -1441,7 +1446,7 @@ let enemyBulletTemplate = {
 }
 let enemyPlasmaTemplate = {
     ...playerBulletTemplate,
-    image: "./assets/img/plasma.png",
+    image: ""+assetsImgPath+"plasma.png",
     velocity: 15,
     colliders:
     [
@@ -1462,7 +1467,7 @@ let enemyLaserTemplate = {
     ...playerBulletTemplate,
     width: 30,
     height: 600,
-    image: "./assets/img/laser.png",
+    image: ""+assetsImgPath+"laser.png",
     velocity: 0,
     colliders:
     [
@@ -1482,7 +1487,7 @@ let enemyLaserTemplate = {
 }
 let enemySpiralTemplate = {
     ...playerBulletTemplate,
-    image: "./assets/img/spiral.png",
+    image: ""+assetsImgPath+"spiral.png",
     velocity: 7,
     colliders:
     [
@@ -1502,7 +1507,7 @@ let enemySpiralTemplate = {
 }
 let enemyWaveTemplate = {
     ...playerBulletTemplate,
-    image: "./assets/img/boss-wave-bullet.png",
+    image: ""+assetsImgPath+"boss-wave-bullet.png",
     width: 80,
     height: 40,
     velocity: 15,
@@ -1537,7 +1542,7 @@ let shieldTemplate = {
             h: 0,
         }
     ],
-    image: "./assets/img/shield-spritesheet.png",
+    image: ""+assetsImgPath+"shield-spritesheet.png",
     vf: 10,
     hf: 1,
     zIndex: 1
@@ -1546,7 +1551,7 @@ let explosionTemplate = {
     width: 200,
     height: 200,
     colliderPercent: 0,
-    image: "./assets/img/explode.png",
+    image: ""+assetsImgPath+"explode.png",
     vf: 11,
     hf: 1,
     animation: explosionAnimation
@@ -1555,7 +1560,7 @@ let bossExplosionTemplate = {
     width: 200,
     height: 200,
     colliderPercent: 0,
-    image: "./assets/img/boss-explode-2.png",
+    image: ""+assetsImgPath+"boss-explode-2.png",
     vf: 13,
     hf: 1,
     animation: bossExplosionAnimation
@@ -1572,7 +1577,7 @@ let cometTemplate = {
             h: 80,
         }
     ],
-    image: "./assets/img/comet-spritesheet.png",
+    image: ""+assetsImgPath+"comet-spritesheet.png",
     velocity: 5,
     collisionMask: ["player"],
     vf: 8,
@@ -1628,7 +1633,7 @@ let enemyBosses = [
     {
         width: 400,
         height: 300,
-        image: "./assets/img/boss-1.png",
+        image: ""+assetsImgPath+"boss-1.png",
         colliders: [
             {
                 x: 0,
@@ -1751,7 +1756,7 @@ let enemyBosses = [
     {
         width: 400,
         height: 300,
-        image: "./assets/img/boss-4.png",
+        image: ""+assetsImgPath+"boss-4.png",
         colliders: [
             {
                 x: 2.5,
@@ -1949,7 +1954,7 @@ let enemyBosses = [
     {
         width: 450,
         height: 300,
-        image: "./assets/img/boss-5.png",
+        image: ""+assetsImgPath+"boss-5.png",
         colliders: [
             {
                 x: 15,
@@ -2123,7 +2128,7 @@ let enemyBosses = [
     {
         width: 400,
         height: 300,
-        image: "./assets/img/boss-2.png",
+        image: ""+assetsImgPath+"boss-2.png",
         colliders: [
             {
                 x: 0,
@@ -2206,7 +2211,7 @@ let enemyBosses = [
                                 {
                                     this.laserAttackPoint += 0.25;
                                     // this.opacity = 0;
-                                    let laserCharge = new AnimatedGameSprite({top: this.height-40, left: 0, height: this.height*1.2, width: this.width, colliders: [{w: 10, h: 100, x: 45, y:0}], collisionMask: ["player"], image:"./assets/img/laser-boss-charge.png",vf:7,hf:1});
+                                    let laserCharge = new AnimatedGameSprite({top: this.height-40, left: 0, height: this.height*1.2, width: this.width, colliders: [{w: 10, h: 100, x: 45, y:0}], collisionMask: ["player"], image:""+assetsImgPath+"laser-boss-charge.png",vf:7,hf:1});
                                     this.addChild(laserCharge);
                                     laserCharge.frameV = 7;
                                     laserCharge.hitPlayer = false;
@@ -2262,7 +2267,7 @@ let enemyBosses = [
                 new Timer("timeout",250,()=>{
                     
                     let shooter = availableShooterList[Math.min(Math.floor(Math.random()*availableShooterList.length),4)];
-                    let laserCharge = new AnimatedGameSprite({top: this.height-30, left: 0, height: this.height*1.2, width: this.width, colliders: [{w: 10, h: 100, x: shooter.left, y:0}], collisionMask: ["player"], image:"./assets/img/laser-boss-charge.png",vf:7,hf:1});
+                    let laserCharge = new AnimatedGameSprite({top: this.height-30, left: 0, height: this.height*1.2, width: this.width, colliders: [{w: 10, h: 100, x: shooter.left, y:0}], collisionMask: ["player"], image:""+assetsImgPath+"laser-boss-charge.png",vf:7,hf:1});
                     this.addChild(laserCharge);
                     laserCharge.hitPlayer = false;
                     laserCharge.behaviour = () =>
@@ -2302,7 +2307,7 @@ let enemyBosses = [
                             this.targetPosition -= Math.sign(this.targetPosition-this.left) * Math.random()*100;
                         }));
 
-                        let laserOrb = new AnimatedGameSprite({top: 30, left: 0, height: this.height, width: this.width, colliders: [], image:"./assets/img/laser-boss-orb.png",vf:8,hf:1});
+                        let laserOrb = new AnimatedGameSprite({top: 30, left: 0, height: this.height, width: this.width, colliders: [], image:""+assetsImgPath+"laser-boss-orb.png",vf:8,hf:1});
                         this.addChild(laserOrb);
                         laserOrb.frameV = 3;
                         laserOrb.animationPlayer.playSprite(laserBossChargeAnimation);
@@ -2337,7 +2342,7 @@ let enemyBosses = [
     {
         width: 400,
         height: 300,
-        image: "./assets/img/boss-3.png",
+        image: ""+assetsImgPath+"boss-3.png",
         colliders: [
             {
                 x: 12,
@@ -2531,7 +2536,7 @@ let enemyBosses = [
             this.targetPosition = null;
             this.active = false;
 
-            this.spinner = new AnimatedGameSprite({top:this.height/4.6,left:this.width/2-this.width/(2*2.2)-1,width:this.width/2.2,height:this.height/4,image: "./assets/img/boss-dive-spin.png",vf:9,hf:1}) 
+            this.spinner = new AnimatedGameSprite({top:this.height/4.6,left:this.width/2-this.width/(2*2.2)-1,width:this.width/2.2,height:this.height/4,image: ""+assetsImgPath+"boss-dive-spin.png",vf:9,hf:1}) 
             this.addChild(this.spinner);
             this.spinnerAnimation = createSpriteAnimation(250,[1,2,3,4,5,6,7,8,9,1],"spinner");
             this.shootAnimation = createSpriteAnimation(250,[1,2,3,4,5,6,7,8],"dive-shoot");
@@ -2540,7 +2545,7 @@ let enemyBosses = [
             if(!this.startDiveAttack)
             {
                 
-                let exp = new Explosion({...explosionTemplate,top:this.top + this.height/1.9,left:this.width/2 - this.width/5,width: this.width/2.5,height:50,image: "./assets/img/dive-explode.png",vf:8,hf:1,animation:this.shootAnimation});
+                let exp = new Explosion({...explosionTemplate,top:this.top + this.height/1.9,left:this.width/2 - this.width/5,width: this.width/2.5,height:50,image: ""+assetsImgPath+"dive-explode.png",vf:8,hf:1,animation:this.shootAnimation});
                 this.addChild(exp);
 
                 new Timer("timeout",100,()=>{
@@ -3254,7 +3259,7 @@ class Player extends AnimatedGameSprite
             else
             {
                 playSound(damageSound);
-                // player.image = "./assets/img/spaceship-damaged.png";
+                // player.image = ""+assetsImgPath+"spaceship-damaged.png";
     
             }
 
@@ -3402,7 +3407,7 @@ class Enemy extends AnimatedGameSprite
 
             if(health<fullHealth)
             {
-                let healthPickup = new AnimatedGameSprite({top:this.top + this.height/2 - 25,left: this.left + this.width/2 - 25,height: 50, width: 50, image: "./assets/img/health.png", colliders:[{w:100,h:100,x:0,y:0}],collisionMask: ["player"],vf:5,hf:1});
+                let healthPickup = new AnimatedGameSprite({top:this.top + this.height/2 - 25,left: this.left + this.width/2 - 25,height: 50, width: 50, image: ""+assetsImgPath+"health.png", colliders:[{w:100,h:100,x:0,y:0}],collisionMask: ["player"],vf:5,hf:1});
                 healthPickup.picked = false;
                 healthPickup.animationPlayer.playLinear(healthIdleAnimation,false,Infinity);
                 healthPickup.behaviour = function()
@@ -4228,7 +4233,7 @@ function startEndScene()
 
         changeBackgroundFilter("hue-rotate(0deg)",3)
 
-        let speedLines = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height: canvasHeight,image: "./assets/img/speed-spritesheet.png",vf:10,hf:1});
+        let speedLines = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height: canvasHeight,image: ""+assetsImgPath+"speed-spritesheet.png",vf:10,hf:1});
         let speedAnimation = createSpriteAnimation(200,[1,2,3,4,5,6,7,8,9,10],"speed");
         speedLines.animationPlayer.playSprite(speedAnimation,false,Infinity);
         speedLines.animationPlayer.playLinear(createLinearAnimation(1000,"opacity",[0,0.5],"speedLineOpacity"));
@@ -4241,7 +4246,7 @@ function startEndScene()
         player.animationPlayer.playLinear(createLinearAnimation(1500,"top",[canvasHeight*4/5-50,150],"playerMoveUp"));
 
         new Timer("timeout",10000,()=>{
-            let earth = new AnimatedGameSprite({top:0,left:0,width:canvasWidth/2,height: canvasWidth/2,image: "./assets/img/earth.png",vf:1,hf:1});
+            let earth = new AnimatedGameSprite({top:0,left:0,width:canvasWidth/2,height: canvasWidth/2,image: ""+assetsImgPath+"earth.png",vf:1,hf:1});
             earth.filters.push("drop-shadow(0 0 5px white)");
             earth.top = -earth.height/2; earth.left = canvasWidth/2 - earth.width/2;
             earth.animationPlayer.playLinear(createLinearAnimation(3000,"top",[-canvasWidth/2,0],"EarthMoveIn"));
@@ -4259,7 +4264,7 @@ function startEndScene()
 
                 new Timer("timeout",8000,()=>{
                     setGameWindow(5);
-                    // let blackScreen = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height:canvasHeight,image:"./assets/img/black.png",vf:1,hf:1});
+                    // let blackScreen = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height:canvasHeight,image:""+assetsImgPath+"black.png",vf:1,hf:1});
                     // blackScreen.animationPlayer.playLinear(createLinearAnimation(2000,"opacity",[0,1],"blackFadeIn"));
 
                     // new Timer("timeout",4000,()=>{
@@ -4310,7 +4315,7 @@ player = new Player();
 
 gameBackgroundLayers.push(
     ...(backgroundLayersTemplate)
-.map((layer)=> new BackgroundImage(0,0,900,2700,layer.speed,`./assets/img/bg/${layer.layer}.png`)));
+.map((layer)=> new BackgroundImage(0,0,900,2700,layer.speed,`${assetsImgPath}bg/${layer.layer}.png`)));
 
 changeBackgroundFilter(enemyWaves[currentWave].backgroundFilter,0);
 
@@ -4375,8 +4380,6 @@ function loop()
 }
 loop();
 
-setPlatformControls();
-
 
 function ResizeGameWindow()
 {
@@ -4415,7 +4418,11 @@ function setPlatformControls()
         if (Object.hasOwnProperty.call(platforms, key))
         {
             const e = platforms[key];
-            if(e.includes(navigator.platform)) document.body.setAttribute("controls",key);
+            if(e.includes(navigator.platform))
+            {
+                document.body.setAttribute("controls",key);
+                assetsImgPath = key==="keyboard" ? "./assets/img/pc/" : "./assets/img/mobile/"
+            }
         }
     }
 }
