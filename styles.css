@@ -347,7 +347,7 @@ body[controls="touch"] .keyboard-guide
 .progress-bar .marker
 {
     height: 0.9em; width: 100%;
-    background-image: url("./assets/img/marker.png");
+    background-image: url("./assets/img/pc/marker.png");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;

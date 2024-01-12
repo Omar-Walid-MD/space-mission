@@ -33,7 +33,7 @@ let debugImages = false;
 
 let controlsActive = true;
 
-let fullHealth = 3;
+let fullHealth = 4;
 let health = fullHealth;
 let score = 0;
 
@@ -66,9 +66,9 @@ let healthSound = "./assets/audio/health.mp3";
 
 let uiSound = "./assets/audio/ui.wav";
 
-let assetsImgPath = "./assets/img/pc/"
+let assetsImgPath = "./assets/img/mobile/"
 
-setPlatformControls();
+// setPlatformControls();
 
 
 let masterVolume = 0.3;
