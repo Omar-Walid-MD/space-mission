@@ -66,7 +66,7 @@ let healthSound = "./assets/audio/health.mp3";
 
 let uiSound = "./assets/audio/ui.wav";
 
-let assetsImgPath = "./assets/img/mobile/"
+let assetsImgPath = "./assets/img/pc/"
 
 // setPlatformControls();
 
@@ -79,6 +79,46 @@ let cometWaveTime = 0.5;
 let currentWave = +localStorage.getItem("currentWave") || 0;
 
 
+// let reader = null;
+// async function getSerialPort()
+// {
+//     const filters = [
+//         { usbVendorId: 0x2341, usbProductId: 0x0043 },
+//         { usbVendorId: 0x2341, usbProductId: 0x0001 }
+//       ];
+
+//     const port = await navigator.serial.requestPort();
+//     await port.open({ baudRate: 9600 });
+
+//     const textDecoder = new TextDecoderStream();
+//     const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+//     reader = textDecoder.readable.getReader();
+
+    
+
+
+// }
+// async function readSerialPort()
+// {
+//     while (true)
+//     {
+//         const { value, done } = await reader.read();
+//         if (done) {
+//             reader.releaseLock();
+//             break;
+//         }
+//         console.log(value);
+//         switch(value)
+//         {
+//             // case 1:
+//             //     player.move
+//             case 3:
+//                 player.move(1);
+//                 // document.body.dispatchEvent(new KeyboardEvent('keydown', {'key': 'space'}));
+//                 break;
+//         }
+//     }
+// }
 //GAME CONTROLS
 
 let controls = {
@@ -4375,7 +4415,7 @@ function loop()
             }
         }
     }
-    
+    // if(reader) readSerialPort();
     requestAnimationFrame(loop);
 }
 loop();
@@ -4426,11 +4466,17 @@ function setPlatformControls()
         }
     }
 }
+setPlatformControls();
 
 
-
-
+// function tempGetSerialPort()
+// {
+//     getSerialPort();
+//     document.body.removeEventListener("click",tempGetSerialPort);
+// }
+// document.body.addEventListener("click",tempGetSerialPort);
 document.body.addEventListener("blur",()=>{setGameWindow(1);});
+
 window.addEventListener("resize",ResizeGameWindow);
 window.addEventListener("load",ResizeGameWindow)
 
@@ -4451,5 +4497,10 @@ if(currentWave && !continueButtonContainer.firstChild)
     continueButtonContainer.appendChild(addElement(`<button class="window-button continue-btn">استأنف اللعبة!</button>`));
     continueButtonContainer.querySelector(".continue-btn").addEventListener("click",()=>{currentWave=+localStorage.getItem("currentWave");setGameWindow(4);});
 }
+
+
+
+
+
 
 })()
