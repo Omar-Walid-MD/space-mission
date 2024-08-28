@@ -40,11 +40,9 @@ let score = 0;
 let speed = 10;
 
 let initialEnemySpawnRate = 60; //per minute
-let maxEnemySpawnRate = 200;
 let enemySpawnRate = initialEnemySpawnRate;
 
 let initialCometSpawnRate = 100; //per minute
-let maxCometSpawnRate = 500;
 let cometSpawnRate = initialCometSpawnRate;
 
 let timers = [];
@@ -79,46 +77,6 @@ let cometWaveTime = 0.5;
 let currentWave = +localStorage.getItem("currentWave") || 0;
 
 
-// let reader = null;
-// async function getSerialPort()
-// {
-//     const filters = [
-//         { usbVendorId: 0x2341, usbProductId: 0x0043 },
-//         { usbVendorId: 0x2341, usbProductId: 0x0001 }
-//       ];
-
-//     const port = await navigator.serial.requestPort();
-//     await port.open({ baudRate: 9600 });
-
-//     const textDecoder = new TextDecoderStream();
-//     const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-//     reader = textDecoder.readable.getReader();
-
-    
-
-
-// }
-// async function readSerialPort()
-// {
-//     while (true)
-//     {
-//         const { value, done } = await reader.read();
-//         if (done) {
-//             reader.releaseLock();
-//             break;
-//         }
-//         console.log(value);
-//         switch(value)
-//         {
-//             // case 1:
-//             //     player.move
-//             case 3:
-//                 player.move(1);
-//                 // document.body.dispatchEvent(new KeyboardEvent('keydown', {'key': 'space'}));
-//                 break;
-//         }
-//     }
-// }
 //GAME CONTROLS
 
 let controls = {
@@ -197,7 +155,8 @@ let controls = {
         }
     } //space
 };
-document.body.onkeydown = function(e)
+
+document.body.addEventListener("keydown",(e) =>
 {
     if(controls[e.which])
     {
@@ -216,8 +175,8 @@ document.body.onkeydown = function(e)
            else if(gameOverlay.getAttribute("window")==="gameOptions") setGameWindow(0);
         }
     }
-}
-document.body.onkeyup = function(e)
+});
+document.body.addEventListener("keyup",(e) =>
 {
     if(controls[e.which])
     {
@@ -229,7 +188,7 @@ document.body.onkeyup = function(e)
             controls[e.which].onUp();
         }
     }
-}
+})
 rightButton.onpointerdown = () => {controls[68].pressed=true;};
 rightButton.onpointerup = rightButton.onpointerleave = () => {controls[68].pressed = false; controls[68].fired = true; if(controls[68].onUp) controls[68].onUp();};
 leftButton.onpointerdown = () => {controls[65].pressed=true;};
@@ -1313,7 +1272,6 @@ let playerTemplate = {
     ],
     speed: speed,
     image: ""+assetsImgPath+"spaceship-sprites.png",
-    filters: ["drop-shadow(0 0 10px gold)"],
     vf: 5,
     hf: 1,
     zIndex: 1
@@ -1339,7 +1297,6 @@ let enemyPurpleTemplate = {
     speed: 5,
     vf: 1,
     hf: 1,
-    filters: ["drop-shadow(0 0 5px magenta)"],
     shoot: function(){let bullet = this.addChild(new Bullet({top: this.height*0.9,left: this.width/2-15,...enemyBulletTemplate})); playSound(enemyShootSound);} 
 }
 let enemyRedTemplate = {
@@ -1360,7 +1317,6 @@ let enemyRedTemplate = {
     speed: 5,
     vf: 1,
     hf: 1,
-    filters: ["drop-shadow(0 0 5px brown)"],
     shootIntervalBase: 1500,
     shoot: function(){let bullet = this.addChild(new Bullet({top: this.height*0.78,left: this.width/2-15,...enemyLaserTemplate})); playSound(enemyLaserSound);} 
 }
@@ -1382,7 +1338,6 @@ let enemyCyanTemplate = {
     speed: 5,
     vf: 1,
     hf: 1,
-    filters: ["drop-shadow(0 0 5px cyan)"],
     shoot: function(){let bullet = this.addChild(new Bullet({top: this.height*0.78,left: this.width*0.15,...enemyPlasmaTemplate}));playSound(enemyShootSound);this.timers.push(new Timer("timeout",750,()=>{let bullet = this.addChild(new Bullet({top: this.height*0.78,left: this.width*0.52,...enemyPlasmaTemplate}));playSound(enemyShootSound);}))} 
 }
 let enemyGreenTemplate = {
@@ -1404,7 +1359,6 @@ let enemyGreenTemplate = {
     vf: 8,
     hf: 1,
     collisionMask: ["player"],
-    filters: ["drop-shadow(0 0 5px greenyellow)"],
     customBehaviour: function(){ if(!this.downVelocity) { if(Math.abs((this.left+this.width/2)-(player.left+player.width/2))<125 && health>0) {this.downVelocity = 15; this.speed/=1; this.animationPlayer.playSprite(enemyGreenAnimation,false,5); playSound(enemyDiveSound);}} else {this.top += this.downVelocity; if(!this.hitPlayer && this.getCollisions().includes(player)) {player.onHit(); this.hitPlayer=true;}}} 
 }
 let enemyBlueTempltate = {
@@ -1426,7 +1380,6 @@ let enemyBlueTempltate = {
     speed: 5,
     vf: 1,
     hf: 1,
-    filters: ["drop-shadow(0 0 5px darkblue)"],
     shoot: function(){let bullet = this.addChild(new Bullet({top: this.height*0.9,left: this.width/2-15,...enemySpiralTemplate})); playSound(enemyShootSound);} 
 }
 
@@ -2664,7 +2617,13 @@ class GameSprite
         this.width = width;
         this.height = height;
 
-        this.image = image;
+        if(image)
+        {
+            this.image = image;
+            this.img = new Image();
+            this.img.src = image;
+        }
+
         this.colliders = colliders;
 
         this.layer = "";
@@ -2706,34 +2665,30 @@ class GameSprite
     {
         if(this.image)
         {
-            let img = new Image();
-            img.src = this.image;
-            ctx.drawImage(img,left,top,width,height);
+            ctx.drawImage(this.img,left,top,width,height);
         }
     }
 
     draw()
     {
         this.drawImage(this.getFromRect("left"),this.getFromRect("top"),this.width,this.height)
-        // if(this.parent) this.drawImage(this.parent.left + this.left,this.parent.top + this.top, this.width, this.height);
-        // else this.drawImage(this.left, this.top, this.width, this.height);
 
-        if(debugColliders)
-        {
-            this.colliders.forEach(collider => {
+        // if(debugColliders)
+        // {
+        //     this.colliders.forEach(collider => {
 
-                let x = this.getFromRect("left") + collider.x * this.width / 100;
-                let y = this.getFromRect("top") + collider.y * this.height / 100;
-                let w = collider.w * this.width / 100;
-                let h = collider.h * this.height / 100;
+        //         let x = this.getFromRect("left") + collider.x * this.width / 100;
+        //         let y = this.getFromRect("top") + collider.y * this.height / 100;
+        //         let w = collider.w * this.width / 100;
+        //         let h = collider.h * this.height / 100;
                 
-                ctx.beginPath();
-                ctx.lineWidth = "4";
-                ctx.strokeStyle = "lime";
-                ctx.rect(x,y,w,h);
-                ctx.stroke();
-            });
-        }
+        //         ctx.beginPath();
+        //         ctx.lineWidth = "4";
+        //         ctx.strokeStyle = "lime";
+        //         ctx.rect(x,y,w,h);
+        //         ctx.stroke();
+        //     });
+        // }
     }
 
     isColliding(objectX,objectY)
@@ -3163,7 +3118,6 @@ class AnimatedGameSprite extends GameSprite
         this.translateX = 0;
         this.translateY = 0;
         this.opacity = 1;
-        this.filters = args.filters || [];
 
         this.collisionMask = args.collisionMask || null;
 
@@ -3179,24 +3133,20 @@ class AnimatedGameSprite extends GameSprite
     {
         if(this.image)
         {
+            // ctx.drawImage(this.img,left,top,this.img.width,this.img.height);
+
+
             let frameWidth = Math.abs(this.img.width)/this.frameCountV;
             let frameHeight = Math.abs(this.img.height)/this.frameCountH;
             let frameVOffset = frameWidth * (this.frameV - 1);
             let frameHOffset = frameHeight * (this.frameH - 1);
 
 
-            ctx.scale(Math.sign(this.scaleX),Math.sign(this.scaleY));
+            if(this.scaleX!==1 || this.scaleY!==1) ctx.scale(Math.sign(this.scaleX),Math.sign(this.scaleY));
             if(this.translateX!==0 || this.translateY!==0) ctx.translate(this.translateX, this.translateY);
             if(this.opacity!==1) ctx.globalAlpha = this.opacity;
-            if(this.filters.length > 0)
-            {
-                let filterText = "";
-                for (let i = 0; i < this.filters.length; i++) {
-                    filterText +=  (this.filters[i] + " ");
-                    
-                }
-                ctx.filter = filterText;
-            }
+
+
 
             let newLeft = left * Math.sign(this.scaleX) - this.width * (Math.abs(this.scaleX)-1)/2;
             let newTop = top * Math.sign(this.scaleY) - this.height * (Math.abs(this.scaleY)-1)/2;
@@ -3206,16 +3156,15 @@ class AnimatedGameSprite extends GameSprite
             if(this.scaleX!==1 || this.scaleY!==1) ctx.scale(1/Math.sign(this.scaleX),1/Math.sign(this.scaleY));
             
             if(this.opacity!==1) ctx.globalAlpha = 1;
-            ctx.filter = "none";
 
-            // if(debugImages)
-            // {
-            //     ctx.beginPath();
-            //     ctx.lineWidth = "4";
-            //     ctx.strokeStyle = "lightskyblue";
-            //     ctx.rect(newLeft,top,this.width,this.height);
-            //     ctx.stroke();
-            // }
+            if(debugImages)
+            {
+                ctx.beginPath();
+                ctx.lineWidth = "4";
+                ctx.strokeStyle = "lightskyblue";
+                ctx.rect(newLeft,top,this.width,this.height);
+                ctx.stroke();
+            }
         }
     }
 
@@ -3240,7 +3189,6 @@ class Player extends AnimatedGameSprite
             new AnimatedGameSprite(shieldTemplate)
         );
         this.shield.setProperty("opacity",0.4);
-        this.filters = playerTemplate.filters;
 
         this.active = true;
 
@@ -3316,9 +3264,9 @@ class Player extends AnimatedGameSprite
 }
 class BackgroundImage extends AnimatedGameSprite
 {
-    constructor(top,left,width,height,speed,image,filters=[],fadeIn=false)
+    constructor(top,left,width,height,speed,image,fadeIn=false)
     {
-        super(top,left,width,height,image,filters);
+        super(top,left,width,height,image);
 
         this.top = top;
         this.left = left;
@@ -3331,16 +3279,10 @@ class BackgroundImage extends AnimatedGameSprite
 
         this.opacity = fadeIn ? 0 : 1;
         this.fadeTime = 1; //percent per minute
-        this.filters = filters;
 
         this.layers = [top,top-height];
 
-        this.bgImage = new Image(this.width,this.height); this.bgImage.src = this.image;
-
-    }
-
-    drawImage()
-    {
+        if(this.image) this.bgImage = new Image(this.width,this.height); this.bgImage.src = this.image;
 
     }
 
@@ -3352,7 +3294,6 @@ class BackgroundImage extends AnimatedGameSprite
             ctx.globalAlpha = this.opacity;
         }
 
-        ctx.filter = this.filters;
 
         ctx.drawImage(this.bgImage,this.left,this.layers[0],canvasWidth,this.height);
         ctx.drawImage(this.bgImage,this.left,this.layers[1],canvasWidth,this.height);
@@ -3362,8 +3303,6 @@ class BackgroundImage extends AnimatedGameSprite
             ctx.globalAlpha = 1;
             this.opacity = Math.min(this.opacity + (1/this.fadeTime)/60,1);
         }
-
-        if(this.filters) ctx.filter = "none";
     }
     moveBackground()
     {
@@ -3704,8 +3643,6 @@ class Timer
         this.time = time;
         this.remaining = time;
         this.delta = 20;
-        // this.last = Date.now();
-        // this.remainder = 0;
         this.paused = false;
         this.id = makeId(5);
 
@@ -3714,9 +3651,6 @@ class Timer
         return this;
     }
 
-    // setTime = (newTime) => {
-    //     this.time = newTime;
-    // }
 
     execute = () => {
         if(!this.paused)
@@ -3736,31 +3670,14 @@ class Timer
                 this.remaining = this.time;
             }
         }
-        // let t = this.remainder===0 ? this.time : this.remainder;
-        // if(Date.now() >= this.last + t && !this.paused)
-        // {
-        //     this.func();
-        //     this.last = Date.now();
 
-        //     if(this.timerType==="timeout")
-        //     {
-        //         this.remove();
-        //         return;
-        //     }
-        //     if(this.remainder!==0)
-        //     {
-        //         this.remainder = 0;
-        //     }
-        // }
     }
 
     pause = () => {
         this.paused = true;
-        // this.remainder = (this.remainder===0 ? this.time : this.remainder) - ((Date.now() - this.last) % this.time)
     }
 
     resume = () => {
-        // this.last = Date.now();
         this.paused = false;
     }
 
@@ -3786,45 +3703,7 @@ class FloatingLabel extends AnimatedGameSprite
     {
         if(this.text)
         {
-            let frameWidth = Math.abs(this.img.width)/this.frameCountV;
-            let frameHeight = Math.abs(this.img.height)/this.frameCountH;
-            let frameVOffset = frameWidth * (this.frameV - 1);
-            let frameHOffset = frameHeight * (this.frameH - 1);
-
-
-            ctx.scale(Math.sign(this.scaleX),Math.sign(this.scaleY));
-            if(this.translateX!==0 || this.translateY!==0) ctx.translate(this.translateX, this.translateY);
-            if(this.opacity!==1) ctx.globalAlpha = this.opacity;
-            if(this.filters.length > 0)
-            {
-                let filterText = "";
-                for (let i = 0; i < this.filters.length; i++) {
-                    filterText +=  (this.filters[i] + " ");
-                    
-                }
-                ctx.filter = filterText;
-            }
-
-            let newLeft = left * Math.sign(this.scaleX) - this.width * (Math.abs(this.scaleX)-1)/2;
-            let newTop = top * Math.sign(this.scaleY) - this.height * (Math.abs(this.scaleY)-1)/2;
-
-            ctx.fillText(this.text,newLeft,newTop);
-            // ctx.drawImage(this.img,frameVOffset,frameHOffset,frameWidth,frameHeight,newLeft,newTop,this.scaleX * this.width,this.scaleY * this.height);
-            
-            if(this.translateX!==0 || this.translateY!==0) ctx.translate(-this.translateX, -this.translateY);
-            if(this.scaleX!==1 || this.scaleY!==1) ctx.scale(1/Math.sign(this.scaleX),1/Math.sign(this.scaleY));
-            
-            if(this.opacity!==1) ctx.globalAlpha = 1;
-            ctx.filter = "none";
-
-            // if(debugImages)
-            // {
-            //     ctx.beginPath();
-            //     ctx.lineWidth = "4";
-            //     ctx.strokeStyle = "lightskyblue";
-            //     ctx.rect(newLeft,top,this.width,this.height);
-            //     ctx.stroke();
-            // }
+            ctx.fillText(this.text,left,top);      
         }
     }
 }
@@ -4118,13 +3997,15 @@ function makeId(length)
     return id;
 
 }
-function changeBackgroundFilter(newFilter,fadeTime=1)
+function changeBackgroundFilter(waveIndex,fadeTime=1)
 {
     let layerIds = gameBackgroundLayers.map((layer)=>layer.id);
-    // let newLayers = [];
     let oldLayers = gameBackgroundLayers.slice();
-    oldLayers.forEach(layer => {
-        let newLayer = new BackgroundImage(layer.top,layer.left,layer.width,layer.height,layer.speed,layer.image,newFilter,true);
+
+    oldLayers.forEach((layer,i) => {
+        let newLayer = new BackgroundImage(layer.top,layer.left,layer.width,layer.height,layer.speed,
+        `${assetsImgPath}bg/${waveIndex+1}-${i+1}.png`,true);
+
         newLayer.layers = layer.layers.slice();
         newLayer.fadeTime = fadeTime;
         gameBackgroundLayers.push(newLayer);
@@ -4138,7 +4019,6 @@ function changeBackgroundFilter(newFilter,fadeTime=1)
                 layer.delete();
                 return false;
             }
-            
         });
     });
 
@@ -4171,14 +4051,13 @@ function startWave(waveType,waveDuration,waveDelay,intervalUpdateFactor=0,interv
             let cometWidth = cometTemplate.width * 0.5 + Math.random() * cometTemplate.width * 0.75;
             let cometHeight = cometWidth/cometTemplate.width * cometTemplate.height;
             let comet = new Comet({...cometTemplate,width: cometWidth, height: cometHeight});
-            comet.filters.push("drop-shadow(0 0 10px rgb(255,255,255,0.5))")
         }
         waveEndFunc = function()
         {
             if(currentWave<4)
             {
                 currentWave++;
-                changeBackgroundFilter(enemyWaves[currentWave].backgroundFilter);
+                changeBackgroundFilter(currentWave);
                 localStorage.setItem("currentWave",currentWave);
                 new Timer("timeout",2000,()=>startWave("enemy",enemyWaveTime*60*1000,3000));
             }
@@ -4271,7 +4150,7 @@ function startEndScene()
 
         healthBar.style.opacity = "0";
 
-        changeBackgroundFilter("hue-rotate(0deg)",3)
+        changeBackgroundFilter(2,3)
 
         let speedLines = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height: canvasHeight,image: ""+assetsImgPath+"speed-spritesheet.png",vf:10,hf:1});
         let speedAnimation = createSpriteAnimation(200,[1,2,3,4,5,6,7,8,9,10],"speed");
@@ -4287,7 +4166,6 @@ function startEndScene()
 
         new Timer("timeout",10000,()=>{
             let earth = new AnimatedGameSprite({top:0,left:0,width:canvasWidth/2,height: canvasWidth/2,image: ""+assetsImgPath+"earth.png",vf:1,hf:1});
-            earth.filters.push("drop-shadow(0 0 5px white)");
             earth.top = -earth.height/2; earth.left = canvasWidth/2 - earth.width/2;
             earth.animationPlayer.playLinear(createLinearAnimation(3000,"top",[-canvasWidth/2,0],"EarthMoveIn"));
             speedLines.animationPlayer.playLinear(createLinearAnimation(1000,"opacity",[0.5,0],"speedLineOpacity"));
@@ -4304,12 +4182,9 @@ function startEndScene()
 
                 new Timer("timeout",8000,()=>{
                     setGameWindow(5);
-                    // let blackScreen = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height:canvasHeight,image:""+assetsImgPath+"black.png",vf:1,hf:1});
-                    // blackScreen.animationPlayer.playLinear(createLinearAnimation(2000,"opacity",[0,1],"blackFadeIn"));
+                    let blackScreen = new AnimatedGameSprite({top:0,left:0,width:canvasWidth,height:canvasHeight,image:""+assetsImgPath+"black.png",vf:1,hf:1});
+                    blackScreen.animationPlayer.playLinear(createLinearAnimation(2000,"opacity",[0,1],"blackFadeIn"));
 
-                    // new Timer("timeout",4000,()=>{
-
-                    // })
                 });
             })
         })
@@ -4327,7 +4202,7 @@ function start()
         player.top = canvasHeight*4/5-50;
     })
 
-    changeBackgroundFilter(enemyWaves[currentWave].backgroundFilter,0);
+    changeBackgroundFilter(currentWave,0);
 
     initHealth();
 
@@ -4353,11 +4228,7 @@ function start()
 
 player = new Player();
 
-gameBackgroundLayers.push(
-    ...(backgroundLayersTemplate)
-.map((layer)=> new BackgroundImage(0,0,900,2700,layer.speed,`${assetsImgPath}bg/${layer.layer}.png`)));
-
-changeBackgroundFilter(enemyWaves[currentWave].backgroundFilter,0);
+gameBackgroundLayers = backgroundLayersTemplate.map((layer)=>  new BackgroundImage(0,0,900,2700,layer.speed,`${assetsImgPath}bg/${currentWave+1}-${layer.layer}.png`));
 
 function loop()
 {
@@ -4371,25 +4242,20 @@ function loop()
     {
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         
-        // for (let i = 0; i < gameBackgroundLayers.length; i++) {
-        //     const layer = gameBackgroundLayers[i];
-        //     layer.drawBackground();
-        //     layer.moveBackground();
-            
-        // }
-        
         for (let i = 0; i < 3; i++)
         {
             let spritesInLayer = gameSprites.filter((gameSprite)=>gameSprite.zIndex===i);
             spritesInLayer.forEach(gameSprite => {
                 gameSprite.update();
-            });
-            
+            });   
         }
-        
-        timers.forEach(timer => {
-            timer.execute();
-        });
+
+
+        for (let i = 0; i < timers.length; i++)
+        {
+            timers[i].execute(); 
+        }
+      
 
         animations.forEach(animation =>{
             animation.update();
@@ -4415,7 +4281,6 @@ function loop()
             }
         }
     }
-    // if(reader) readSerialPort();
     requestAnimationFrame(loop);
 }
 loop();
@@ -4461,7 +4326,7 @@ function setPlatformControls()
             if(e.includes(navigator.platform))
             {
                 document.body.setAttribute("controls",key);
-                assetsImgPath = key==="keyboard" ? "./assets/img/pc/" : "./assets/img/mobile/"
+                assetsImgPath = "./assets/img/pc/";
             }
         }
     }
@@ -4469,12 +4334,6 @@ function setPlatformControls()
 setPlatformControls();
 
 
-// function tempGetSerialPort()
-// {
-//     getSerialPort();
-//     document.body.removeEventListener("click",tempGetSerialPort);
-// }
-// document.body.addEventListener("click",tempGetSerialPort);
 document.body.addEventListener("blur",()=>{setGameWindow(1);});
 
 window.addEventListener("resize",ResizeGameWindow);
@@ -4497,9 +4356,6 @@ if(currentWave && !continueButtonContainer.firstChild)
     continueButtonContainer.appendChild(addElement(`<button class="window-button continue-btn">استأنف اللعبة!</button>`));
     continueButtonContainer.querySelector(".continue-btn").addEventListener("click",()=>{currentWave=+localStorage.getItem("currentWave");setGameWindow(4);});
 }
-
-
-
 
 
 

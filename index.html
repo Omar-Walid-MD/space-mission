@@ -11,75 +11,77 @@
 </head>
 <body active="false" started="false" controls="unknown">
     <div class="page-container flex-center">
-        <div class="game-window flex-center" id="gamewindow">
-            <canvas class="game-canvas" width="900" height="600" id="gamecanvas"></canvas>
-            <!-- <div class="game-credits-container">
-                <p class="game-credits">Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis voluptatum quia nobis odit error fugiat placeat maiores eveniet optio voluptas eum, modi at doloremque dolorem minus, consectetur voluptatem quos explicabo?</p>
-            </div> -->
-            <h3 class="score-label" id="scorelabel">0</h3>
-            <div class="progress-bar flex-column" id="progressbar">
-                <div class="top"></div>
-                <div class="marker"></div>
-                <div class="bottom"></div>
-            </div>
-            <div class="health-bar flex-column" id="healthbar"></div>
-            <div class="boss-health-bar" id="bosshealthbar">
-                <div class="boss-health-bar-range"></div>
-            </div>
-            <div class="game-pause-buttons flex-column">
-                <div class="window-button flex-center pause-btn">
-                    <img src="assets/img/pc/pause.png" alt="" style="height: 100%;">
+        <div class="game-window-container flex-center">
+            <div class="game-window flex-center" id="gamewindow">
+                <canvas class="game-canvas" width="900" height="600" id="gamecanvas"></canvas>
+                <!-- <div class="game-credits-container">
+                    <p class="game-credits">Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis voluptatum quia nobis odit error fugiat placeat maiores eveniet optio voluptas eum, modi at doloremque dolorem minus, consectetur voluptatem quos explicabo?</p>
+                </div> -->
+                <h3 class="score-label" id="scorelabel">0</h3>
+                <div class="progress-bar flex-column" id="progressbar">
+                    <div class="top"></div>
+                    <div class="marker"></div>
+                    <div class="bottom"></div>
                 </div>
-            </div>
-            <div class="game-window-buttons flex-row game-guide">
-                <button class="game-window-button" id="rightbutton">
-                    إضغط باستمرار للتحرك <b>يمينا</b>
-                </button>
-                <button class="game-window-button" id="shootbutton">
-                    إضغط <b>للإطلاق</b>
-                </button>
-                <button class="game-window-button" id="leftbutton">
-                    إضغط باستمرار للتحرك <b>يسارا</b>
-                </button>
-            </div>
-            <div class="game-guide keyboard-guide">
-                استخدم A و D للحركة و Space للإطلاق 
-            </div>
-            <div class="game-overlay flex-center" id="gameoverlay" window="gameStart">
-                <div class="game-start-window flex-row" id="gamestart">
-                    <div class="game-start-menu flex-column">
-                        <h1 class="game-start-title" >مهمة الفضاء</h1>
-                        <div class="game-start-menu-buttons flex-column">
-                            <div class="continue-btn-container"></div>
-                            <button class="window-button start-new-btn">لعبة جديدة!</button>
-                            <!-- <button class="window-button">المزيد</button> -->
-                        </div>
+                <div class="health-bar flex-column" id="healthbar"></div>
+                <div class="boss-health-bar" id="bosshealthbar">
+                    <div class="boss-health-bar-range"></div>
+                </div>
+                <div class="game-pause-buttons flex-column">
+                    <div class="window-button flex-center pause-btn">
+                        <img src="assets/img/pc/pause.png" alt="" style="height: 100%;">
                     </div>
-                    <img class="game-start-img" src="assets/img/pc/spaceship.gif" />
                 </div>
-                <div class="game-paused-window flex-column" id="gamepaused">
-                    <h1>تم ايقاف اللعبة مؤقتا</h1>
-                    <div class="flex-row buttons-row">
-                        <button class="window-button play-btn">إستئناف</button>
+                <div class="game-window-buttons flex-row game-guide">
+                    <button class="game-window-button" id="rightbutton">
+                        إضغط باستمرار للتحرك <b>يمينا</b>
+                    </button>
+                    <button class="game-window-button" id="shootbutton">
+                        إضغط <b>للإطلاق</b>
+                    </button>
+                    <button class="game-window-button" id="leftbutton">
+                        إضغط باستمرار للتحرك <b>يسارا</b>
+                    </button>
+                </div>
+                <div class="game-guide keyboard-guide">
+                    استخدم A و D للحركة و Space للإطلاق 
+                </div>
+                <div class="game-overlay flex-center" id="gameoverlay" window="gameStart">
+                    <div class="game-start-window flex-row" id="gamestart">
+                        <div class="game-start-menu flex-column">
+                            <h1 class="game-start-title" >مهمة الفضاء</h1>
+                            <div class="game-start-menu-buttons flex-column">
+                                <div class="continue-btn-container"></div>
+                                <button class="window-button start-new-btn">لعبة جديدة!</button>
+                                <!-- <button class="window-button">المزيد</button> -->
+                            </div>
+                        </div>
+                        <img class="game-start-img" src="assets/img/pc/spaceship.gif" />
+                    </div>
+                    <div class="game-paused-window flex-column" id="gamepaused">
+                        <h1>تم ايقاف اللعبة مؤقتا</h1>
+                        <div class="flex-row buttons-row">
+                            <button class="window-button play-btn">إستئناف</button>
+                            <button class="window-button main-menu-btn">القائمة</button>
+                        </div>
+    
+                    </div>
+                    <div class="game-over-window flex-column" id="gameover">
+                        <div>
+                            <h1 class="window-label" >لقد خسرت</h1>
+                            <h3 class="game-over-score-label flex-center" new-highscore="false">النقاط:</h3>
+                            <h4 class="game-over-highscore-label">أعلى نقاط: </h4>
+                        </div>
+                        <button class="window-button retry-btn">العب مجددا</button>
+                    </div>
+                    <div class="game-won-window flex-column" id="gamewon">
+                        <div>
+                            <h1 class="window-label" >تم انهاء اللعبة</h1>
+                        </div>
                         <button class="window-button main-menu-btn">القائمة</button>
                     </div>
-
+                    <!-- <div class="version-label">1.2</div> -->
                 </div>
-                <div class="game-over-window flex-column" id="gameover">
-                    <div>
-                        <h1 class="window-label" >لقد خسرت</h1>
-                        <h3 class="game-over-score-label flex-center" new-highscore="false">النقاط:</h3>
-                        <h4 class="game-over-highscore-label">أعلى نقاط: </h4>
-                    </div>
-                    <button class="window-button retry-btn">العب مجددا</button>
-                </div>
-                <div class="game-won-window flex-column" id="gamewon">
-                    <div>
-                        <h1 class="window-label" >تم انهاء اللعبة</h1>
-                    </div>
-                    <button class="window-button main-menu-btn">القائمة</button>
-                </div>
-                <!-- <div class="version-label">1.2</div> -->
             </div>
         </div>
     </div>
