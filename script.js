@@ -66,8 +66,6 @@ let uiSound = "./assets/audio/ui.wav";
 
 let assetsImgPath = "./assets/img/pc/"
 
-// setPlatformControls();
-
 
 let masterVolume = 0.3;
 
@@ -75,6 +73,75 @@ let enemyWaveTime = 0.5;
 let cometWaveTime = 0.5;
 
 let currentWave = +localStorage.getItem("currentWave") || 0;
+
+
+const imagePaths = [
+    "spaceship-sprites.png",
+    "enemy.png",
+    "enemy-cyan.png",
+    "enemy-blue.png",
+    "enemy-red.png",
+    "enemy-green-sheet.png",
+
+    "bullet.png",
+    "bullet-impact.png",
+    "enemy-bullet.png",
+    "plasma.png",
+    "laser.png",
+    "spiral.png",
+    "boss-wave-bullet.png",
+
+    "shield-spritesheet.png",
+    "explode.png",
+    "boss-explode-2.png",
+    "comet-spritesheet.png",
+
+    "boss-1.png",
+    "boss-2.png",
+    "boss-3.png",
+    "boss-4.png",
+    "boss-5.png",
+
+    "laser-boss-charge.png",
+    "laser-boss-orb.png",
+    "boss-dive-spin.png",
+    "dive-explode.png",
+
+    "health.png",
+    "speed-spritesheet.png",
+    "earth.png",
+    "black.png",
+
+    "bg/1-1.png",
+    "bg/1-2.png",
+    "bg/1-3.png",
+    "bg/1-4.png",
+
+    "bg/2-1.png",
+    "bg/2-2.png",
+    "bg/2-3.png",
+    "bg/2-4.png",
+
+    "bg/3-1.png",
+    "bg/3-2.png",
+    "bg/3-3.png",
+    "bg/3-4.png",
+
+    "bg/4-1.png",
+    "bg/4-2.png",
+    "bg/4-3.png",
+    "bg/4-4.png",
+
+    "bg/5-1.png",
+    "bg/5-2.png",
+    "bg/5-3.png",
+    "bg/5-4.png",
+
+
+]
+const loadedImages = {};
+let imagesToLoad = imagePaths.length;
+
 
 
 //GAME CONTROLS
@@ -1798,7 +1865,6 @@ let enemyBosses = [
                     let enemiesLeft = 5;
     
                     let enemySpawnTimer = new Timer("interval",2000,()=>{
-                        // console.log(enemyWaves[currentWave].enemyTemplate)
                         let enemy = new Enemy(enemyWaves[currentWave].enemyTemplate);
                         enemiesLeft--;
     
@@ -3247,7 +3313,6 @@ class Player extends AnimatedGameSprite
             else
             {
                 playSound(damageSound);
-                // player.image = ""+assetsImgPath+"spaceship-damaged.png";
     
             }
 
@@ -4315,24 +4380,52 @@ function ResizeGameWindow()
 function setPlatformControls()
 {
     let platforms = {
-        "keyboard": ["Windows","Win16","Win32","WinCE","Linux","Linux i686"],
-        "touch": ["Android","Linux armv7l",null,"iPhone","iPod","iPad","BlackBerry"]
+        "touch": ["Android","Linux armv7l","iPhone","iPod","iPad","BlackBerry"],
+        "keyboard": ["Windows","Win16","Win32","Win64","WinCE","Linux","Linux i686","Mac"]
     };
+    assetsImgPath = "./assets/img/pc/";
+    document.body.setAttribute("controls","keyboard");
+
     for (const key in platforms)
     {
         if (Object.hasOwnProperty.call(platforms, key))
         {
             const e = platforms[key];
-            if(e.includes(navigator.platform))
+            for (const platform of e)
             {
-                document.body.setAttribute("controls",key);
-                assetsImgPath = "./assets/img/pc/";
+                if(navigator.userAgent.includes(platform))
+                {
+                    document.body.setAttribute("controls",key);
+                    return;
+                }
             }
         }
     }
 }
 setPlatformControls();
 
+function preloadImages(onComplete) {
+    imagePaths.forEach((path) => {
+        const img = new Image();
+        img.src = assetsImgPath + path;
+
+        img.onload = () => {
+            loadedImages[path] = img;
+            imagesToLoad--;
+            if (imagesToLoad === 0) {
+                onComplete();
+            }
+        };
+
+        img.onerror = () => {
+            console.error(`Failed to load image: ${path}`);
+            imagesToLoad--;
+            if (imagesToLoad === 0) {
+                onComplete();
+            }
+        };
+    });
+}
 
 document.body.addEventListener("blur",()=>{setGameWindow(1);});
 
@@ -4357,6 +4450,7 @@ if(currentWave && !continueButtonContainer.firstChild)
     continueButtonContainer.querySelector(".continue-btn").addEventListener("click",()=>{currentWave=+localStorage.getItem("currentWave");setGameWindow(4);});
 }
 
+preloadImages(()=>{});
 
 
 })()

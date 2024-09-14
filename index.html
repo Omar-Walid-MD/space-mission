@@ -7,12 +7,12 @@
     <title>Space Mission</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="assets/img/pc/marker.png">
-    <!-- <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'> -->
 </head>
 <body active="false" started="false" controls="unknown">
+    <!-- <div id="test"></div> -->
     <div class="page-container flex-center">
         <div class="game-window-container flex-center">
-            <div class="game-window flex-center" id="gamewindow">
+            <div class="game-window" id="gamewindow">
                 <canvas class="game-canvas" width="900" height="600" id="gamecanvas"></canvas>
                 <!-- <div class="game-credits-container">
                     <p class="game-credits">Lorem ipsum dolor sit amet consectetur adipisicing elit. Blanditiis voluptatum quia nobis odit error fugiat placeat maiores eveniet optio voluptas eum, modi at doloremque dolorem minus, consectetur voluptatem quos explicabo?</p>
@@ -32,17 +32,7 @@
                         <img src="assets/img/pc/pause.png" alt="" style="height: 100%;">
                     </div>
                 </div>
-                <div class="game-window-buttons flex-row game-guide">
-                    <button class="game-window-button" id="rightbutton">
-                        إضغط باستمرار للتحرك <b>يمينا</b>
-                    </button>
-                    <button class="game-window-button" id="shootbutton">
-                        إضغط <b>للإطلاق</b>
-                    </button>
-                    <button class="game-window-button" id="leftbutton">
-                        إضغط باستمرار للتحرك <b>يسارا</b>
-                    </button>
-                </div>
+                
                 <div class="game-guide keyboard-guide">
                     استخدم A و D للحركة و Space للإطلاق 
                 </div>
@@ -81,6 +71,19 @@
                         <button class="window-button main-menu-btn">القائمة</button>
                     </div>
                     <!-- <div class="version-label">1.2</div> -->
+                </div>
+            </div>
+            <div class="game-mobile-buttons">   
+                <button class="game-mobile-button flex-center" id="shootbutton">
+                    <img src="assets/img/pc/shoot.png" alt="" style="height: 100%;">
+                </button>
+                <div class="game-moving-buttons flex-row">
+                    <button class="game-mobile-button" id="rightbutton">
+                        <img src="assets/img/pc/arrow.png" alt="" style="height: 100%; scale: -1 1;">
+                    </button>
+                    <button class="game-mobile-button" id="leftbutton">
+                        <img src="assets/img/pc/arrow.png" alt="" style="height: 100%;">
+                    </button>
                 </div>
             </div>
         </div>
