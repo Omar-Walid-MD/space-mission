@@ -193,8 +193,12 @@ body[controls="touch"] .keyboard-guide
     height: 2.5rem;
     padding: 0.5rem;
 
-
 }
+.game-mobile-button *
+{
+    pointer-events: none;
+}
+
 .game-mobile-button#shootbutton
 {
     width: min(10rem,15vw);
